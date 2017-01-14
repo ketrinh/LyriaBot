@@ -1,6 +1,17 @@
-var Discord = require("discord.js");
+var Discord = require("discord.js"); //required dependencies
 var wikiSearch = require('nodemw');
 var bot = new Discord.Client();
+
+try {
+  var auth = require("./auth.json");
+} catch(e){
+  console.log("An auth.json is needed");
+}
+
+if (auth.bot_token) {
+  console.log("logging in with bot token");
+  bot.login(auth.bot_token);
+}
 var commands = {
   "!ping": {
     description: "responds pong",
@@ -10,9 +21,9 @@ var commands = {
   }
 }
 
-bot.on("message", msg => {
+bot.on("message", msg => { //event handler for a message
   let prefix = "!"; //prefix for the bot
-  var responses = {
+  var responses = { //possible responses for the bot to respond
       "!ping": "pong!",
       "!foo": "bar!",
       "!Dong-A-Long-A-Long": "It's Lyria!"
@@ -20,36 +31,44 @@ bot.on("message", msg => {
   if(!msg.content.startsWith(prefix)) return; //small optimization
   if(msg.author.bot) return; //exit if bot sends a message
 
-  if(responses[msg.content]) {
+  if(responses[msg.content]) { //sends the appropriate message for the cmd
     msg.channel.sendMessage(responses[msg.content]);
   }
 
+  //begin main functionality
   if(msg.content.startsWith(prefix + "gbfwiki")) {
-    let args = msg.content.split(" ").slice(1);
-    let searchterm = args.join("+");
-    var client = new wikiSearch({
+    let args = msg.content.split(" ").slice(1); //remove the !gbfwiki
+    let searchterm = args.join(" "); //join search terms with more than one word
+
+    var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
       protocol: 'https',
       server: 'gbf.wiki',
       path: '/',
       debug: false
     }),
-    params = {
+    params = { //paramaters for a direct api call
       action: 'opensearch',
       search: searchterm,
       limit: 1,
       format: 'json'
     };
 
-    client.api.call(params, function(err, info, next, data) {
-      console.log(searchterm + ": " + data);
-      msg.channel.sendMessage(data[3]);
+    console.log("Searching for: " + searchterm);
 
+    client.api.call(params, function(err, info, next, data) { //call the api
+      console.log(searchterm + ": " + data);
+      //data[3] contains the url for the page
+      if(!data[3].length){ //if there's nothing there
+        msg.channel.sendMessage("Something went wrong :(");
+      }
+      else { //post url in chat
+        msg.channel.sendMessage("<" + data[3] + ">"); //no embeds
+
+      }
     });
   }
 });
 
 bot.on('ready', () => {
-  console.log('I am ready!');
+  console.log('Dong-A-Long-A-Long! It\'s Lyria!');
 });
-
-bot.login("MjY5Mzg4MjE5NDI5Mjg5OTg0.C1rfhw.SBEVPLlwJq63oP5QlTXz0qP0LVQ");
