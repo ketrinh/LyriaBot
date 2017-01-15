@@ -93,7 +93,7 @@ function inputHonors(message) {
   "comment box add: !honors <honors>");
 }
 function parseHonors(message) {
-  let args = message.content.split().slice(1);
+  let args = message.content.split().slice(0);
   console.log(args);
   console.log(message.attachments.first().url);
 }
