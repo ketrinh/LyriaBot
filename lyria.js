@@ -46,24 +46,45 @@ bot.on("message", msg => { //event handler for a message
       path: '/',
       debug: false
     }),
-    params = { //paramaters for a direct api call
+    paramsQuery = { //paramaters for a direct api call
+      action: 'query',
+      prop: 'info',
+      inprop: 'url',
+      generator: 'search',
+      gsrsearch: searchterm,
+      gsrlimit: 1,
+      format: 'json',
+      indexpageids: 1
+    },
+    paramsSearch = {
       action: 'opensearch',
       search: searchterm,
       limit: 1,
       format: 'json'
-    };
+    }
 
     console.log("Searching for: " + searchterm);
 
-    client.api.call(params, function(err, info, next, data) { //call the api
-      console.log(searchterm + ": " + data);
-      //data[3] contains the url for the page
-      if(!data[3].length){ //if there's nothing there
-        msg.channel.sendMessage("Something went wrong :(");
-      }
-      else { //post url in chat
-        msg.channel.sendMessage("<" + data[3] + ">"); //no embeds
+    client.api.call(paramsQuery, function(err, info, next, data) { //call the api
+      try {
+        console.log(info);
 
+        console.log(info["pageids"][0]);
+        let pageId = info["pageids"][0];
+        console.log(info["pages"][pageId].fullurl);
+        let url = info["pages"][pageId].fullurl;
+        msg.channel.sendMessage("<" + url + ">");
+      }
+      catch(TypeError) {
+        client.api.call(paramsSearch, function(err2, info2, next2, data2) {
+          console.log("Typo?");
+          if(!data2[3].length){
+            msg.channel.sendMessage("Could not find page for " + searchterm);
+          }
+          else {
+            msg.channel.sendMessage("<" + data2[3] + ">");
+          }
+        });
       }
     });
   }
