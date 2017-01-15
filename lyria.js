@@ -1,24 +1,20 @@
 var Discord = require("discord.js"); //required dependencies
 var wikiSearch = require('nodemw');
 var bot = new Discord.Client();
+/* authorize various apis */
 
 try {
   var auth = require("./auth.json");
 } catch(e){
   console.log("An auth.json is needed");
 }
-
-if (auth.bot_token) {
+if(auth.bot_token) {
   console.log("logging in with bot token");
   bot.login(auth.bot_token);
 }
-var commands = {
-  "!ping": {
-    description: "responds pong",
-    process: function(bot, msg, suffix) {
-      msg.channel.sendMessage("pong!");
-    }
-  }
+if (auth.google_api_key) {
+  console.log("Authorizing Google Sheets API");
+  var SHEETSID = auth.google_api_key;
 }
 
 bot.on("message", msg => { //event handler for a message
@@ -26,7 +22,7 @@ bot.on("message", msg => { //event handler for a message
   var responses = { //possible responses for the bot to respond
       "!ping": "pong!",
       "!foo": "bar!",
-      "!Dong-A-Long-A-Long": "It's Lyria!"
+      "!Dong-A-Long-A-Long": "It's Lyria!",
   }
   if(!msg.content.startsWith(prefix)) return; //small optimization
   if(msg.author.bot) return; //exit if bot sends a message
@@ -37,59 +33,65 @@ bot.on("message", msg => { //event handler for a message
 
   //begin main functionality
   if(msg.content.startsWith(prefix + "gbfwiki")) {
-    let args = msg.content.split(" ").slice(1); //remove the !gbfwiki
-    let searchterm = args.join(" "); //join search terms with more than one word
-
-    var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
-      protocol: 'https',
-      server: 'gbf.wiki',
-      path: '/',
-      debug: false
-    }),
-    paramsQuery = { //paramaters for a direct api call
-      action: 'query',
-      prop: 'info',
-      inprop: 'url',
-      generator: 'search',
-      gsrsearch: searchterm,
-      gsrlimit: 1,
-      format: 'json',
-      indexpageids: 1
-    },
-    paramsSearch = {
-      action: 'opensearch',
-      search: searchterm,
-      limit: 1,
-      format: 'json'
-    }
-
-    console.log("Searching for: " + searchterm);
-
-    client.api.call(paramsQuery, function(err, info, next, data) { //call the api
-      try {
-        console.log(info);
-
-        console.log(info["pageids"][0]);
-        let pageId = info["pageids"][0];
-        console.log(info["pages"][pageId].fullurl);
-        let url = info["pages"][pageId].fullurl;
-        msg.channel.sendMessage("<" + url + ">");
-      }
-      catch(TypeError) {
-        client.api.call(paramsSearch, function(err2, info2, next2, data2) {
-          console.log("Typo?");
-          if(!data2[3].length){
-            msg.channel.sendMessage("Could not find page for " + searchterm);
-          }
-          else {
-            msg.channel.sendMessage("<" + data2[3] + ">");
-          }
-        });
-      }
-    });
+    searchWiki(msg);
+  }
+  if(msg.content.startsWith(prefix + "gwhonors")) {
+    inputHonors(msg);
   }
 });
+function searchWiki(message) {
+  let args = msg.content.split(" ").slice(1); //remove the !gbfwiki
+  let searchterm = args.join(" "); //join search terms with more than one word
 
+  var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
+    protocol: 'https',
+    server: 'gbf.wiki',
+    path: '/',
+    debug: false
+  }),
+  paramsQuery = { //paramaters for a direct api call
+    action: 'query', //action to take: query
+    prop: 'info',//property to get: info
+    inprop: 'url',//add extra info about url
+    generator: 'search',//enable searching
+    gsrsearch: searchterm,//what to search
+    gsrlimit: 1,//take only first result
+    format: 'json', //output as .json
+    indexpageids: 1// get page ids
+  },
+  paramsSearch = {
+    action: 'opensearch',//action: opensearch for typos
+    search: searchterm,// what to search
+    limit: 1,// only 1 result
+    format: 'json'//output as .json
+  }
+  client.api.call(paramsQuery, function(err, info, next, data) { //call api
+    try { //error returned when no such page matches exactly
+      console.log("querying: " + searchterm);
+      let pageId = info["pageids"][0];
+      console.log(info["pages"][pageId].fullurl);
+      let url = info["pages"][pageId].fullurl;
+      msg.channel.sendMessage("<" + url + ">");//output message to channel
+    }
+    catch(TypeError) { //catch that error and use opensearch protocol
+      client.api.call(paramsSearch, function(err2, info2, next2, data2) {
+        console.log("Typo?");
+        if(!data2[3].length){//404 error url is always at 4th index
+          msg.channel.sendMessage("Could not find page for " + searchterm);
+        }
+        else {
+          msg.channel.sendMessage("<" + data2[3] + ">");//output message
+        }
+      });
+    }
+  });
+}
+function inputHonors(message) {
+  let user = message.author;
+  user.sendMessage("Please input honors in the format of:<IGN> <day#> <honors>\n"
+  + "For example: Ven 2 2000000");
+
+}
 bot.on('ready', () => {
   console.log('Dong-A-Long-A-Long! It\'s Lyria!');
 });
