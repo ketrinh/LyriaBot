@@ -1,5 +1,6 @@
 var Discord = require("discord.js"); //required dependencies
-var wikiSearch = require('nodemw');
+var wikiSearch = require("nodemw");
+
 var bot = new Discord.Client();
 /* authorize various apis */
 
@@ -12,10 +13,6 @@ if(auth.bot_token) {
   console.log("logging in with bot token");
   bot.login(auth.bot_token);
 }
-if (auth.google_api_key) {
-  console.log("Authorizing Google Sheets API");
-  var SHEETSID = auth.google_api_key;
-}
 
 bot.on("message", msg => { //event handler for a message
   let prefix = "!"; //prefix for the bot
@@ -27,6 +24,7 @@ bot.on("message", msg => { //event handler for a message
   if(!msg.content.startsWith(prefix)) return; //small optimization
   if(msg.author.bot) return; //exit if bot sends a message
 
+  const channel = msg.channel;
   if(responses[msg.content]) { //sends the appropriate message for the cmd
     msg.channel.sendMessage(responses[msg.content]);
   }
@@ -37,6 +35,9 @@ bot.on("message", msg => { //event handler for a message
   }
   if(msg.content.startsWith(prefix + "gwhonors")) {
     inputHonors(msg);
+  }
+  if(msg.channel.type === 'dm' && msg.content.startsWith(prefix + "honors")) {
+    parseHonors(msg);
   }
 });
 function searchWiki(message) {
@@ -88,9 +89,13 @@ function searchWiki(message) {
 }
 function inputHonors(message) {
   let user = message.author;
-  user.sendMessage("Please input honors in the format of:<IGN> <day#> <honors>\n"
-  + "For example: Ven 2 2000000");
-
+  user.sendMessage("Please send a screenshot of your honors and in the" +
+  "comment box add: !honors <honors>");
+}
+function parseHonors(message) {
+  let args = message.content.split().slice(1);
+  console.log(args);
+  console.log(message.attachments.first().url);
 }
 bot.on('ready', () => {
   console.log('Dong-A-Long-A-Long! It\'s Lyria!');
