@@ -106,9 +106,19 @@ function inputHonors(message) {
   "comment box add: !honors <honors>");
 }
 function parseHonors(message) {
-  let args = message.content.split().slice(0);
-  console.log(args);
-  console.log(message.attachments.first().url);
+  let user = message.author;
+  let args = message.content.split(" ").slice(1);
+  
+  if (isNaN(args[0])) {    // User input check for integer
+    user.sendMessage("Please enter a valid number.  For example, to enter 10million honors, type 10");
+    return;
+  }
+  if (!(message.attachments.first() == undefined)) {
+    console.log(message.attachments.first().url);
+  }
+  console.log("Username is: " + message.author["username"]);
+  console.log("Honors is: " + args[0]);
+  
 }
 bot.on('ready', () => {
   console.log('Dong-A-Long-A-Long! It\'s Lyria!');
