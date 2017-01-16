@@ -17,16 +17,29 @@ if(auth.bot_token) {
 bot.on("message", msg => { //event handler for a message
   let prefix = "!"; //prefix for the bot
   var responses = { //possible responses for the bot to respond
-      "!ping": "pong!",
-      "!foo": "bar!",
-      "!Dong-A-Long-A-Long": "It's Lyria!",
+    "!ping": "pong!",
+    "!foo": "bar!",
+    "!Dong-A-Long-A-Long": "It's Lyria!",
   }
-  if(!msg.content.startsWith(prefix)) return; //small optimization
+  var whatskoi = [
+    "A no-good lolicon!",
+    "Our dear leader!",
+    "A fish!",
+    "A dirty waifu switcher!",
+    "A man who chases waifus to no avail!",
+    "A criminal!",
+    "A sticker hoarder!",
+    "Your brother!",
+    "A person who doesn't really deserve this cyberbullying!"
+  ]
   if(msg.author.bot) return; //exit if bot sends a message
 
   const channel = msg.channel;
   if(responses[msg.content]) { //sends the appropriate message for the cmd
     msg.channel.sendMessage(responses[msg.content]);
+  }
+  if(msg.content === "Who's Koi?") {
+    msg.channel.sendMessage(whatskoi[Math.floor(Math.random() * (whatskoi.length))]);
   }
 
   //begin main functionality
