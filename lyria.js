@@ -53,7 +53,7 @@ bot.on("message", msg => { //event handler for a message
     parseHonors(msg);
   }
 });
-function searchWiki(message) {
+function searchWiki(msg) {
   let args = msg.content.split(" ").slice(1); //remove the !gbfwiki
   let searchterm = args.join(" "); //join search terms with more than one word
 
