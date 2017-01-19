@@ -1,3 +1,5 @@
 {
-  "bot_token" : "bot token if using bot account"
+  "bot_token" : "bot token if using bot account",
+  "officer_channel" : "officer only channel ID",
+  "server_id" : "Discord server ID"
 }

@@ -4,6 +4,7 @@ var wikiSearch = require("nodemw");
 var bot = new Discord.Client();
 /* authorize various apis */
 
+
 try {
   var auth = require("./auth.json");
 } catch(e){
@@ -51,6 +52,13 @@ bot.on("message", msg => { //event handler for a message
   }
   if(msg.channel.type === 'dm' && msg.content.startsWith(prefix + "honors")) {
     parseHonors(msg);
+  }
+  if(msg.channel.id.match(auth.officer_channel) && msg.content.startsWith(prefix + "gwprelims")) {
+    console.log(msg.channel.name);
+    prelimsNotif(msg);
+  }
+  else {
+    msg.channel.sendMessage("Please make the command in the officers channel");
   }
 });
 function searchWiki(msg) {
@@ -120,6 +128,22 @@ function parseHonors(message) {
   console.log("Honors is: " + args[0]);
   
 }
+
+// Preliminaries notification message; Simple @everyone in default channel
+function prelimsNotif(message) {
+  let args = message.content.split(" ").slice(1);
+  if (isNaN(args[0]) || args[0] < 0) {
+    message.channel.sendMessage("Please enter a valid non negative number.");
+    return;
+  }
+  let prelimsMessage = "@everyone\nGuild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
+  bot.guilds.get(auth.server_id).defaultChannel.sendMessage(prelimsMessage);
+  //console.log(message.author);
+  //console.log((bot.guilds.get(serverID).defaultChannel.sendMessage("This is a nuke @everyone")));
+  //console.log(bot.guilds.firstKey());
+  
+}
+
 bot.on('ready', () => {
   console.log('Dong-A-Long-A-Long! It\'s Lyria!');
 });
