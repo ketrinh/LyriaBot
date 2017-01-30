@@ -57,8 +57,13 @@ bot.on("message", msg => { //event handler for a message
     console.log(msg.channel.name);
     prelimsNotif(msg);
   }
-  else {
+  else if (msg.content.startsWith(prefix + "gwprelims")) {
     msg.channel.sendMessage("Please make the command in the officers channel");
+  }
+  if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
+    let helpMessage = "I'll do my best to help!\nAvailable Commands:\n!gbfwiki <name>  => I'll try to find a wiki page for your character\n" +
+    "!honors => I'll PM you instructions on how to submit honors\n!gwprelims <number> => I'll tell everyone the minimum contribution!\n"
+    msg.channel.sendMessage(helpMessage);
   }
 });
 function searchWiki(msg) {
