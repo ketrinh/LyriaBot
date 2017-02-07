@@ -53,10 +53,14 @@ bot.on("message", msg => { //event handler for a message
     else if (msg.content.startsWith(prefix + "gwfinals")) {
       msg.channel.sendMessage("Please make the command in the officers channel");
     }
+    else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwvictory")) {
+      bot.guilds.get(auth.server_id).defaultChannel.sendMessage("@everyone\nWe won!\n");
+    }
     else if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
       let helpMessage = "I'll do my best to help!\nAvailable Commands:\n!gbfwiki <name>  => I'll try to find a wiki page for your character\n" +
       "!honors => I'll PM you instructions on how to submit honors\n!gwprelims <number> => I'll tell everyone the minimum contribution!\n" +
-      "!gwfinals <number> <yes/no> <number> => First: number 1-5 for Finals Day #   Second: yes or no to fighting   Third: Minimum honors\n";
+      "!gwfinals <number> <yes/no> <number> => First: number 1-5 for Finals Day #   Second: yes or no to fighting   Third: Minimum honors\n" +
+      "!gwvictory => I'll tell everyone we won!\n";
       msg.channel.sendMessage(helpMessage);
     }
   }
