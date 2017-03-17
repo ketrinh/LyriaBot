@@ -22,29 +22,48 @@ bot.on("message", msg => { //event handler for a message
     "!foo": "bar!",
     "!Dong-A-Long-A-Long": "It's Lyria!",
   }
- 
+
   if(msg.author.bot) return; //exit if bot sends a message
 
   const channel = msg.channel;
   if(responses[msg.content]) { //sends the appropriate message for the cmd
     msg.channel.sendMessage(responses[msg.content]);
   }
+
   //begin main functionality
-  if(msg.content.startsWith(prefix + "gbfwiki")) {
-    searchWiki(msg);
-  }
-  if(msg.content.startsWith(prefix + "gwhonors")) {
-    inputHonors(msg);
-  }
-  if(msg.channel.type === 'dm' && msg.content.startsWith(prefix + "honors")) {
-    parseHonors(msg);
-  }
-  if(msg.channel.id.match(auth.officer_channel) && msg.content.startsWith(prefix + "gwprelims")) {
-    console.log(msg.channel.name);
-    prelimsNotif(msg);
-  }
-  else {
-    msg.channel.sendMessage("Please make the command in the officers channel");
+  if(msg.content.charAt(0) == prefix) {
+    if(msg.content.startsWith(prefix + "gbfwiki")) {
+      searchWiki(msg);
+    }
+    else if(msg.content.startsWith(prefix + "gwhonors")) {
+      inputHonors(msg);
+    }
+    else if(msg.channel.type === 'dm' && msg.content.startsWith(prefix + "honors")) {
+      parseHonors(msg);
+    }
+    else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwprelims")) {
+      console.log(msg.channel.name);
+      prelimsNotif(msg);
+    }
+    else if (msg.content.startsWith(prefix + "gwprelims")) {
+      msg.channel.sendMessage("Please make the command in the officers channel");
+    }
+    else if (msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwfinals")) {
+      gwfinalsMessage(msg);
+    }
+    else if (msg.content.startsWith(prefix + "gwfinals")) {
+      msg.channel.sendMessage("Please make the command in the officers channel");
+    }
+    else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwvictory")) {
+      bot.guilds.get(auth.server_id).defaultChannel.sendMessage("@everyone\nWe won!\n");
+    }
+    else if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
+      let helpMessage = "I'll do my best to help!\nAvailable Commands:\n!gbfwiki <name>  => I'll try to find a wiki page for your character\n" +
+      "!honors => I'll PM you instructions on how to submit honors\n!gwprelims <number> => I'll tell everyone the minimum contribution!\n" +
+      "!gwfinals <number> <yes/no> <number> => First: number 1-5 for Finals Day #   Second: yes or no to fighting   Third: Minimum honors\n" +
+      "!gwvictory => I'll tell everyone we won!\n";
+      msg.channel.sendMessage(helpMessage);
+    }
   }
 });
 function searchWiki(msg) {
@@ -128,6 +147,28 @@ function prelimsNotif(message) {
   //console.log((bot.guilds.get(serverID).defaultChannel.sendMessage("This is a nuke @everyone")));
   //console.log(bot.guilds.firstKey());
   
+}
+
+function gwfinalsMessage(message) {
+  let args = message.content.split(" ").slice(1);
+  if (args.length != 3) {
+    message.channel.sendMessage("Make sure to fill all fields in the command.  Use '!help' for to learn more\n");
+    return;
+  }
+  if (isNaN(args[0]) || isNaN(args[2])) {
+    message.channel.sendMessage("The first and third fields need to be numbers. Use !help to learn more\n");
+    return;
+  }
+  if (args[1].toLowerCase() != "yes" && args[1].toLowerCase() != "no") {
+    message.channel.sendMessage("Please indicate 'yes' or 'no' in the second field\n");
+    return;
+  }
+  if (args[0] < 1 || args[0] > 5) {
+    message.channel.sendMessage("First field number needs to be a 1, 2, 3, 4, or 5 to indicate Finals day\n");
+    return;
+  }
+  let finalsMessage = "@everyone\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
+  bot.guilds.get(auth.server_id).defaultChannel.sendMessage(finalsMessage);
 }
 
 bot.on('ready', () => {
