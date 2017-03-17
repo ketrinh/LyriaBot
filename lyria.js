@@ -22,6 +22,7 @@ bot.on("message", msg => { //event handler for a message
     "!foo": "bar!",
     "!Dong-A-Long-A-Long": "It's Lyria!",
   }
+
   if(msg.author.bot) return; //exit if bot sends a message
 
   const channel = msg.channel;
