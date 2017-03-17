@@ -1,9 +1,8 @@
 var Discord = require("discord.js"); //required dependencies
 var wikiSearch = require("nodemw");
-
+var googleAPI = require("googleapis");
 var bot = new Discord.Client();
 /* authorize various apis */
-
 
 try {
   var auth = require("./auth.json");
@@ -22,7 +21,7 @@ bot.on("message", msg => { //event handler for a message
     "!foo": "bar!",
     "!Dong-A-Long-A-Long": "It's Lyria!",
   }
- 
+
   if(msg.author.bot) return; //exit if bot sends a message
 
   const channel = msg.channel;
@@ -43,7 +42,7 @@ bot.on("message", msg => { //event handler for a message
     console.log(msg.channel.name);
     prelimsNotif(msg);
   }
-  else {
+  else{
     msg.channel.sendMessage("Please make the command in the officers channel");
   }
 });
@@ -57,7 +56,7 @@ function searchWiki(msg) {
     path: '/',
     debug: false
   }),
-  paramsQuery = { //paramaters for a direct api call
+  paramsQuery = { //parameters for a direct api call
     action: 'query', //action to take: query
     prop: 'info',//property to get: info
     inprop: 'url',//add extra info about url
@@ -102,9 +101,10 @@ function inputHonors(message) {
 function parseHonors(message) {
   let user = message.author;
   let args = message.content.split(" ").slice(1);
-  
+
   if (isNaN(args[0])) {    // User input check for integer
-    user.sendMessage("Please enter a valid number.  For example, to enter 10million honors, type 10");
+    user.sendMessage("Please enter a valid number.  For example, to enter 10" +
+    " million honors, type 10");
     return;
   }
   if (!(message.attachments.first() == undefined)) {
@@ -112,7 +112,7 @@ function parseHonors(message) {
   }
   console.log("Username is: " + message.author["username"]);
   console.log("Honors is: " + args[0]);
-  
+
 }
 
 // Preliminaries notification message; Simple @everyone in default channel
@@ -127,7 +127,7 @@ function prelimsNotif(message) {
   //console.log(message.author);
   //console.log((bot.guilds.get(serverID).defaultChannel.sendMessage("This is a nuke @everyone")));
   //console.log(bot.guilds.firstKey());
-  
+
 }
 
 bot.on('ready', () => {
