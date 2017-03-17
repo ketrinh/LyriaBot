@@ -1,3 +1,4 @@
+use strict;
 var Discord = require("discord.js"); //required dependencies
 var wikiSearch = require("nodemw");
 var googleAPI = require("googleapis");
