@@ -1,4 +1,4 @@
-use strict;
+
 var Discord = require("discord.js"); //required dependencies
 var wikiSearch = require("nodemw");
 var googleAPI = require("googleapis");
@@ -16,7 +16,7 @@ if(auth.bot_token) {
 }
 
 bot.on("message", msg => { //event handler for a message
-  let prefix = "!"; //prefix for the bot
+  var prefix = "!"; //prefix for the bot
   var responses = { //possible responses for the bot to respond
     "!ping": "pong!",
     "!foo": "bar!",
