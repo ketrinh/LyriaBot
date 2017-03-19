@@ -31,12 +31,14 @@ bot.on("message", msg => { //event handler for a message
   }
 
   //begin main functionality
+  var result, re = /\[\[(.*?)\]\]/gi;
+    while ((result = re.exec(msg)) != null) {
+        searchWiki(result);
+        }
+    }
 
   if(msg.content.charAt(0) == prefix) {
-    if(msg.content.startsWith(prefix + "gbfwiki")) {
-      searchWiki(msg);
-    }
-    else if(msg.content.startsWith(prefix + "gwhonors")) {
+    if(msg.content.startsWith(prefix + "gwhonors")) {
       inputHonors(msg);
     }
     else if(msg.channel.type === 'dm' && msg.content.startsWith(prefix + "honors")) {
@@ -69,8 +71,7 @@ bot.on("message", msg => { //event handler for a message
   }
 });
 function searchWiki(msg) {
-  let args = msg.content.split(" ").slice(1); //remove the !gbfwiki
-  let searchterm = args.join(" "); //join search terms with more than one word
+  let searchterm = msg.join(" "); //join search terms with more than one word
 
   var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
     protocol: 'https',
