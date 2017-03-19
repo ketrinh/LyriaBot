@@ -34,10 +34,11 @@ bot.on("message", msg => { //event handler for a message
   //begin main functionality
 
 
-
-  var result, re = /\[\[(.*?)\]\]/gi;
-    while ((result = re.exec(msg.content) != null) {
-        searchWiki(result);
+  var content = msg.content;
+  var result, re = /\[\[(.*?)\]\]/g;
+    while ((result = re.exec(msg.content)) != null) {
+        console.log(result);
+        searchWiki(msg, result[1]);
     }
 
 
@@ -65,7 +66,7 @@ bot.on("message", msg => { //event handler for a message
       bot.guilds.get(auth.server_id).defaultChannel.sendMessage("@everyone\nWe won!\n");
     }
     else if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
-      let helpMessage = "I'll do my best to help!\nAvailable Commands:\n!gbfwiki <name>  => I'll try to find a wiki page for your character\n" +
+      let helpMessage = "I'll do my best to help!\nAvailable Commands:[[term]] => I'll try to find a wiki page for your character\n" +
       "!honors => I'll PM you instructions on how to submit honors\n!gwprelims <number> => I'll tell everyone the minimum contribution!\n" +
       "!gwfinals <number> <yes/no> <number> => First: number 1-5 for Finals Day #   Second: yes or no to fighting   Third: Minimum honors\n" +
       "!gwvictory => I'll tell everyone we won!\n";
@@ -74,9 +75,7 @@ bot.on("message", msg => { //event handler for a message
 
   }
 });
-function searchWiki(msg) {
-  let searchterm = msg.join(" "); //join search terms with more than one word
-
+function searchWiki(msg, search) {
   var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
     protocol: 'https',
     server: 'gbf.wiki',
@@ -88,20 +87,21 @@ function searchWiki(msg) {
     prop: 'info',//property to get: info
     inprop: 'url',//add extra info about url
     generator: 'search',//enable searching
-    gsrsearch: searchterm,//what to search
+    gsrsearch: search,//what to search
     gsrlimit: 1,//take only first result
     format: 'json', //output as .json
     indexpageids: 1// get page ids
   },
   paramsSearch = {
     action: 'opensearch',//action: opensearch for typos
-    search: searchterm,// what to search
+    search: search,// what to search
     limit: 1,// only 1 result
     format: 'json'//output as .json
   }
   client.api.call(paramsQuery, function(err, info, next, data) { //call api
+    console.log("querying: " + search);
+
     try { //error returned when no such page matches exactly
-      console.log("querying: " + searchterm);
       let pageId = info["pageids"][0];
       console.log(info["pages"][pageId].fullurl);
       let url = info["pages"][pageId].fullurl;
@@ -111,7 +111,7 @@ function searchWiki(msg) {
       client.api.call(paramsSearch, function(err2, info2, next2, data2) {
         console.log("Typo?");
         if(!data2[3].length){//404 error url is always at 4th index
-          msg.channel.sendMessage("Could not find page for " + searchterm);
+          msg.channel.sendMessage("Could not find page for " + search);
         }
         else {
           msg.channel.sendMessage("<" + data2[3] + ">");//output message
