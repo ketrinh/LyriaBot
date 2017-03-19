@@ -38,7 +38,6 @@ bot.on("message", msg => { //event handler for a message
   var result, re = /\[\[(.*?)\]\]/gi;
     while ((result = re.exec(msg)) != null) {
         searchWiki(result);
-        }
     }
 
 
