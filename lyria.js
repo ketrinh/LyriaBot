@@ -1,3 +1,4 @@
+"use strict";
 
 var Discord = require("discord.js"); //required dependencies
 var wikiSearch = require("nodemw");
@@ -16,7 +17,7 @@ if(auth.bot_token) {
 }
 
 bot.on("message", msg => { //event handler for a message
-  var prefix = "!"; //prefix for the bot
+  let prefix = "!"; //prefix for the bot
   var responses = { //possible responses for the bot to respond
     "!ping": "pong!",
     "!foo": "bar!",
@@ -31,7 +32,7 @@ bot.on("message", msg => { //event handler for a message
   }
 
   //begin main functionality
-
+  "use strict";
   if(msg.content.charAt(0) == prefix) {
     if(msg.content.startsWith(prefix + "gbfwiki")) {
       searchWiki(msg);
