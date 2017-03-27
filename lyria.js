@@ -4,6 +4,7 @@ var Discord = require("discord.js"); //required dependencies
 var wikiSearch = require("nodemw");
 var googleAPI = require("googleapis");
 var bot = new Discord.Client();
+var fs = require("fs");
 /* authorize various apis */
 
 try {
@@ -18,24 +19,15 @@ if(auth.bot_token) {
 
 bot.on("message", msg => { //event handler for a message
   let prefix = "!"; //prefix for the bot
-  var responses = { //possible responses for the bot to respond
-    "!ping": "pong!",
-    "!foo": "bar!",
-    "!Dong-A-Long-A-Long": "It's Lyria!",
-  }
 
   if(msg.author.bot) return; //exit if bot sends a message
 
   const channel = msg.channel;
-  if(responses[msg.content]) { //sends the appropriate message for the cmd
-    msg.channel.sendMessage(responses[msg.content]);
-  }
-
-  //begin main functionality
+    //begin main functionality
 
 
   var content = msg.content;
-  var result, re = /\[\[(.*?)\]\]/g;
+  var result, re = /\[\[(.*?)\]\]/g;//regex
     while ((result = re.exec(msg.content)) != null) {
         console.log(result);
         searchWiki(msg, result[1]);
@@ -46,31 +38,48 @@ bot.on("message", msg => { //event handler for a message
     if(msg.content.startsWith(prefix + "gwhonors")) {
       inputHonors(msg);
     }
+
     else if(msg.channel.type === 'dm' && msg.content.startsWith(prefix + "honors")) {
       parseHonors(msg);
     }
+
     else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwprelims")) {
       console.log(msg.channel.name);
       prelimsNotif(msg);
     }
+
     else if (msg.content.startsWith(prefix + "gwprelims")) {
       msg.channel.sendMessage("Please make the command in the officers channel");
     }
+
     else if (msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwfinals")) {
       gwfinalsMessage(msg);
     }
+
     else if (msg.content.startsWith(prefix + "gwfinals")) {
       msg.channel.sendMessage("Please make the command in the officers channel");
     }
+
     else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwvictory")) {
       bot.guilds.get(auth.server_id).defaultChannel.sendMessage("@everyone\nWe won!\n");
     }
+
     else if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
-      let helpMessage = "I'll do my best to help!\nAvailable Commands:[[term]] => I'll try to find a wiki page for your character\n" +
+      let helpMessage = "I'll do my best to help!\nAvailable Commands:[[term]]  => I'll try to find a wiki page for your character\n" +
       "!honors => I'll PM you instructions on how to submit honors\n!gwprelims <number> => I'll tell everyone the minimum contribution!\n" +
       "!gwfinals <number> <yes/no> <number> => First: number 1-5 for Finals Day #   Second: yes or no to fighting   Third: Minimum honors\n" +
       "!gwvictory => I'll tell everyone we won!\n";
       msg.channel.sendMessage(helpMessage);
+    }
+    else if (msg.content.startsWith(prefix + "setwaifu")) {
+      setWaifu(msg);
+    }
+
+    else if(msg.content.startsWith(prefix + "waifu")) {
+      getWaifu(msg);
+    }
+    else {
+        msg.channel.sendMessage("Unrecognized Command. Use !help to see a list of commands!");
     }
 
   }
@@ -120,11 +129,13 @@ function searchWiki(msg, search) {
     }
   });
 }
+
 function inputHonors(message) {
   let user = message.author;
   user.sendMessage("Please send a screenshot of your honors and in the" +
   "comment box add: !honors <honors>");
 }
+
 function parseHonors(message) {
   let user = message.author;
   let args = message.content.split(" ").slice(1);
@@ -175,8 +186,61 @@ function gwfinalsMessage(message) {
     message.channel.sendMessage("First field number needs to be a 1, 2, 3, 4, or 5 to indicate Finals day\n");
     return;
   }
+
   let finalsMessage = "@everyone\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
   bot.guilds.get(auth.server_id).defaultChannel.sendMessage(finalsMessage);
+}
+
+function setWaifu(message) {
+    let args = message.content.split(" ").slice(1);
+    if (args.length < 1) {
+        message.channel.sendMessage("You didn't enter a name!");
+        return;
+    }
+    let waifu = args.toLowerCase();
+    waifu = waifu[0].toUpperCase() + waifu.slice(1);
+    let user = message.author.id;
+
+
+    fs.readFile('./data/waifus.json', 'utf8', function(err, data){
+        if(err) {
+            console.log(err);
+        }
+        else {
+        var data = JSON.parse(data);
+
+        data[user] = waifu;
+        data = JSON.stringify(data);
+        fs.writeFile('./data/waifus.json', data, 'utf8', (err) => {
+            if (err) throw err;
+            message.channel.sendMessage("Your waifu was set as " + waifu + "!");
+        });
+
+    }});
+
+
+}
+
+function getWaifu(message) {
+    let mentions = message.mentions;
+    let user = mentions.users.firstKey();
+    let name = mentions.users.first().username;
+
+    fs.readFile('./data/waifus.json', 'utf8', function(err, data) {
+        if(err) {
+            console.log(err);
+        }
+        else {
+            var data = JSON.parse(data);
+
+            if(var result = data[user] == 0) {
+                message.channel.sendMessage(name + " hasn't set a waifu yet!");
+            };
+            message.channel.sendMessage(name + "'s waifu is " + result + "!");
+        }
+    });
+
+
 }
 
 bot.on('ready', () => {
