@@ -161,12 +161,12 @@ function parseHonors(message) {
 
 // Preliminaries notification message; Simple @everyone in default channel
 function prelimsNotif(message) {
-  let args = message.content.split(" ").slice(1);
+  var args = message.content.split(" ").slice(1);
   if (isNaN(args[0]) || args[0] < 0) {
     message.channel.sendMessage("Please enter a valid non negative number.");
     return;
   }
-  let prelimsMessage = "@everyone\nGuild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
+  var prelimsMessage = "@everyone\nGuild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
   bot.guilds.get(auth.server_id).defaultChannel.sendMessage(prelimsMessage);
   //console.log(message.author);
   //console.log((bot.guilds.get(serverID).defaultChannel.sendMessage("This is a nuke @everyone")));
@@ -193,7 +193,7 @@ function gwfinalsMessage(message) {
     return;
   }
 
-  let finalsMessage = "@everyone\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
+  var finalsMessage = "@everyone\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
   bot.guilds.get(auth.server_id).defaultChannel.sendMessage(finalsMessage);
 }
 
@@ -267,7 +267,6 @@ function getSkills(message) {
   else {
     search += args[0];
   }
-  console.log(search);
   findPage(message, search);
 }
 
@@ -302,7 +301,6 @@ function findPage(msg, search) {
       console.log(info["pages"][pageId].fullurl);
       let url = info["pages"][pageId].fullurl;
       parseSkills(msg, url);
-      //msg.channel.sendMessage("<" + url + ">");//output message to channel
     }
     catch(TypeError) { //catch that error and use opensearch protocol
       client.api.call(paramsSearch, function(err2, info2, next2, data2) {
@@ -312,7 +310,6 @@ function findPage(msg, search) {
         }
         else {
           parseSkills(msg, data2[3]);
-          //msg.channel.sendMessage("<" + data2[3] + ">");//output message
         }
       });
     }
@@ -330,12 +327,14 @@ function parseSkills(msg, page) {
   });
   pyshell.send(url).end(function(err){
     if (err) {
-      console.log("error");
+      console.log("Invalid skills page");
+      msg.channel.sendMessage("I found no skills in <" + url + ">");
+    } else{
+      msg.channel.sendMessage(output);
+      console.log("parseSkills success");
     }
-    console.log(output);
+    
   });
-  
-
 }
 
 
