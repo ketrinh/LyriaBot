@@ -7,7 +7,7 @@ var bot = new Discord.Client();
 var fs = require("fs");
 var request = require('request');
 var cheerio = require('cheerio');
-var PythonShell = require('python-shell')
+var PythonShell = require('python-shell');
 /* authorize various apis */
 
 try {
@@ -19,7 +19,8 @@ if(auth.bot_token) {
   console.log("logging in with bot token");
   bot.login(auth.bot_token);
 }
-
+let skillsCache = {"one":"first"};
+let timerId = setInterval(()=>clearCache(), 21600000); // clear cache every 6 hours
 bot.on("message", msg => { //event handler for a message
   let prefix = "!"; //prefix for the bot
 
@@ -28,7 +29,7 @@ bot.on("message", msg => { //event handler for a message
   const channel = msg.channel;
     //begin main functionality
 
-
+  
   var content = msg.content;
   var result, re = /\[\[(.*?)\]\]/g;//regex
     while ((result = re.exec(msg.content)) != null) {
@@ -267,7 +268,12 @@ function getSkills(message) {
   else {
     search += args[0];
   }
-  findPage(message, search);
+  if (skillsCache.hasOwnProperty(search)) {
+    message.channel.sendMessage(skillsCache[search]);
+  }
+  else {
+    findPage(message, search);
+  }
 }
 
 function findPage(msg, search) {
@@ -300,7 +306,7 @@ function findPage(msg, search) {
       let pageId = info["pageids"][0];
       console.log(info["pages"][pageId].fullurl);
       let url = info["pages"][pageId].fullurl;
-      parseSkills(msg, url);
+      parseSkills(msg, url, search);
     }
     catch(TypeError) { //catch that error and use opensearch protocol
       client.api.call(paramsSearch, function(err2, info2, next2, data2) {
@@ -309,14 +315,14 @@ function findPage(msg, search) {
           msg.channel.sendMessage("Could not find page for " + search);
         }
         else {
-          parseSkills(msg, data2[3]);
+          parseSkills(msg, data2[3], search);
         }
       });
     }
   });
 }
 
-function parseSkills(msg, page) {
+function parseSkills(msg, page, search) {
   var url = page;
   var pyshell = new PythonShell('scraper.py', {
     mode: 'text'
@@ -331,10 +337,16 @@ function parseSkills(msg, page) {
       msg.channel.sendMessage("I found no skills in <" + url + ">");
     } else{
       msg.channel.sendMessage(output);
+      skillsCache[search] = output;
       console.log("parseSkills success");
     }
     
   });
+}
+
+function clearCache() {
+  skillsCache = {};
+  console.log("cache cleared");
 }
 
 

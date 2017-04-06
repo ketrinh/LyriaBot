@@ -7,7 +7,13 @@ from bs4 import BeautifulSoup
 url = ""
 for line in sys.stdin:
 	url = line[:-1]
-page = requests.get(url)
+headers = requests.utils.default_headers()
+headers.update(
+        {
+                'User-Agent': 'LyriaBot',
+        }
+)
+page = requests.get(url, headers=headers)
 soup = BeautifulSoup(page.content, "html.parser")
 
 table = soup.find(text="Skills").find_parent("table")
