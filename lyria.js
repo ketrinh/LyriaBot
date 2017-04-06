@@ -37,7 +37,9 @@ bot.on("message", msg => { //event handler for a message
         searchWiki(msg, result[1]);
     }
 
-
+  if (msg.content === "SOIYA") {
+    msg.channel.sendMessage("SOIYA");
+  }
   if(msg.content.charAt(0) == prefix) {
     if(msg.content.startsWith(prefix + "gwhonors")) {
       inputHonors(msg);
