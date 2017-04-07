@@ -5,6 +5,9 @@ var wikiSearch = require("nodemw");
 var googleAPI = require("googleapis");
 var bot = new Discord.Client();
 var fs = require("fs");
+var request = require('request');
+var cheerio = require('cheerio');
+var PythonShell = require('python-shell');
 /* authorize various apis */
 
 try {
@@ -16,7 +19,8 @@ if(auth.bot_token) {
   console.log("logging in with bot token");
   bot.login(auth.bot_token);
 }
-
+let skillsCache = {"one":"first"};
+let timerId = setInterval(()=>clearCache(), 21600000); // clear cache every 6 hours
 bot.on("message", msg => { //event handler for a message
   let prefix = "!"; //prefix for the bot
 
@@ -25,7 +29,7 @@ bot.on("message", msg => { //event handler for a message
   const channel = msg.channel;
     //begin main functionality
 
-
+  
   var content = msg.content;
   var result, re = /\[\[(.*?)\]\]/g;//regex
     while ((result = re.exec(msg.content)) != null) {
@@ -33,7 +37,9 @@ bot.on("message", msg => { //event handler for a message
         searchWiki(msg, result[1]);
     }
 
-
+  if (msg.content === "SOIYA") {
+    msg.channel.sendMessage("SOIYA");
+  }
   if(msg.content.charAt(0) == prefix) {
     if(msg.content.startsWith(prefix + "gwhonors")) {
       inputHonors(msg);
@@ -65,7 +71,7 @@ bot.on("message", msg => { //event handler for a message
     }
 
     else if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
-      let helpMessage = "I'll do my best to help!\nAvailable Commands:[[term]]  => I'll try to find a wiki page for your character\n" +
+      var helpMessage = "I'll do my best to help!\nAvailable Commands:[[term]]  => I'll try to find a wiki page for your character\n" +
       "!honors => I'll PM you instructions on how to submit honors\n!gwprelims <number> => I'll tell everyone the minimum contribution!\n" +
       "!gwfinals <number> <yes/no> <number> => First: number 1-5 for Finals Day #   Second: yes or no to fighting   Third: Minimum honors\n" +
       "!gwvictory => I'll tell everyone we won!\n";
@@ -77,6 +83,9 @@ bot.on("message", msg => { //event handler for a message
 
     else if(msg.content.startsWith(prefix + "waifu")) {
       getWaifu(msg);
+    }
+    else if(msg.content.startsWith(prefix + "skills")) {
+      getSkills(msg);
     }
     else {
         msg.channel.sendMessage("Unrecognized Command. Use !help to see a list of commands!");
@@ -155,12 +164,12 @@ function parseHonors(message) {
 
 // Preliminaries notification message; Simple @everyone in default channel
 function prelimsNotif(message) {
-  let args = message.content.split(" ").slice(1);
+  var args = message.content.split(" ").slice(1);
   if (isNaN(args[0]) || args[0] < 0) {
     message.channel.sendMessage("Please enter a valid non negative number.");
     return;
   }
-  let prelimsMessage = "@everyone\nGuild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
+  var prelimsMessage = "@everyone\nGuild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
   bot.guilds.get(auth.server_id).defaultChannel.sendMessage(prelimsMessage);
   //console.log(message.author);
   //console.log((bot.guilds.get(serverID).defaultChannel.sendMessage("This is a nuke @everyone")));
@@ -187,7 +196,7 @@ function gwfinalsMessage(message) {
     return;
   }
 
-  let finalsMessage = "@everyone\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
+  var finalsMessage = "@everyone\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
   bot.guilds.get(auth.server_id).defaultChannel.sendMessage(finalsMessage);
 }
 
@@ -232,8 +241,8 @@ function getWaifu(message) {
         }
         else {
             var data = JSON.parse(data);
-
-            if(var result = data[user] == 0) {
+            var result = data[user];
+            if(result == 0) {
                 message.channel.sendMessage(name + " hasn't set a waifu yet!");
             };
             message.channel.sendMessage(name + "'s waifu is " + result + "!");
@@ -242,6 +251,108 @@ function getWaifu(message) {
 
 
 }
+
+
+function getSkills(message) {
+  var args = message.content.split(" ").slice(1);
+  if (args.length < 1) {
+    message.channel.sendMessage("Enter a character name");
+    return;
+  }
+  var search = "";
+  if (args.length > 1) {
+    var i;
+    for (i = 0; i < args.length-1; i++) {
+      search += args[i] + " ";
+    }
+    search += args[args.length-1];
+  }
+  else {
+    search += args[0];
+  }
+  if (skillsCache.hasOwnProperty(search)) {
+    message.channel.sendMessage(skillsCache[search]);
+  }
+  else {
+    findPage(message, search);
+  }
+}
+
+function findPage(msg, search) {
+  var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
+    protocol: 'https',
+    server: 'gbf.wiki',
+    path: '/',
+    debug: false
+  }),
+  paramsQuery = { //parameters for a direct api call
+    action: 'query', //action to take: query
+    prop: 'info',//property to get: info
+    inprop: 'url',//add extra info about url
+    generator: 'search',//enable searching
+    gsrsearch: search,//what to search
+    gsrlimit: 1,//take only first result
+    format: 'json', //output as .json
+    indexpageids: 1// get page ids
+  },
+  paramsSearch = {
+    action: 'opensearch',//action: opensearch for typos
+    search: search,// what to search
+    limit: 1,// only 1 result
+    format: 'json'//output as .json
+  }
+  client.api.call(paramsQuery, function(err, info, next, data) { //call api
+    console.log("querying: " + search);
+
+    try { //error returned when no such page matches exactly
+      let pageId = info["pageids"][0];
+      console.log(info["pages"][pageId].fullurl);
+      let url = info["pages"][pageId].fullurl;
+      parseSkills(msg, url, search);
+    }
+    catch(TypeError) { //catch that error and use opensearch protocol
+      client.api.call(paramsSearch, function(err2, info2, next2, data2) {
+        console.log("Typo?");
+        if(!data2[3].length){//404 error url is always at 4th index
+          msg.channel.sendMessage("Could not find page for " + search);
+        }
+        else {
+          parseSkills(msg, data2[3], search);
+        }
+      });
+    }
+  });
+}
+
+function parseSkills(msg, page, search) {
+  var url = page;
+  var pyshell = new PythonShell('scraper.py', {
+    mode: 'text'
+  });
+  var output = '';
+  pyshell.stdout.on('data', function (data) {
+    output += ''+data;
+  });
+  pyshell.send(url).end(function(err){
+    if (err) {
+      console.log("Invalid skills page");
+      msg.channel.sendMessage("I found no skills in <" + url + ">");
+    } else{
+      msg.channel.sendMessage(output);
+      skillsCache[search] = output;
+      console.log("parseSkills success");
+    }
+    
+  });
+}
+
+function clearCache() {
+  skillsCache = {};
+  console.log("cache cleared");
+}
+
+
+
 
 bot.on('ready', () => {
   console.log('Dong-A-Long-A-Long! It\'s Lyria!');
