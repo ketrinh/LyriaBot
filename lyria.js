@@ -327,7 +327,8 @@ function findPage(msg, search) {
 function parseSkills(msg, page, search) {
   var url = page;
   var pyshell = new PythonShell('scraper.py', {
-    mode: 'text'
+    mode: 'text',
+    pythonPath: 'python3'
   });
   var output = '';
   pyshell.stdout.on('data', function (data) {
@@ -335,6 +336,7 @@ function parseSkills(msg, page, search) {
   });
   pyshell.send(url).end(function(err){
     if (err) {
+      console.log(err);
       console.log("Invalid skills page");
       msg.channel.sendMessage("I found no skills in <" + url + ">");
     } else{
