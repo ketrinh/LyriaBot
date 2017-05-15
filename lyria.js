@@ -69,7 +69,7 @@ bot.on("message", msg => { //event handler for a message
     }
 
     else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwvictory")) {
-      bot.guilds.get(auth.server_id).defaultChannel.sendMessage("@everyone\nWe won!\n");
+      bot.guilds.get(auth.server_id).defaultChannel.sendMessage("@NextGen\nWe won!\n");
     }
 
     else if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
@@ -174,7 +174,7 @@ function prelimsNotif(message) {
     message.channel.sendMessage("Please enter a valid non negative number.");
     return;
   }
-  var prelimsMessage = "@everyone\nGuild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
+  var prelimsMessage = "@NextGen\nGuild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
   bot.guilds.get(auth.server_id).defaultChannel.sendMessage(prelimsMessage);
   //console.log(message.author);
   //console.log((bot.guilds.get(serverID).defaultChannel.sendMessage("This is a nuke @everyone")));
@@ -201,7 +201,7 @@ function gwfinalsMessage(message) {
     return;
   }
 
-  var finalsMessage = "@everyone\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
+  var finalsMessage = "@NextGen\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
   bot.guilds.get(auth.server_id).defaultChannel.sendMessage(finalsMessage);
 }
 
