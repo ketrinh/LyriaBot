@@ -34,7 +34,9 @@ bot.on("message", msg => { //event handler for a message
   var result, re = /\[\[(.*?)\]\]/g;//regex
     while ((result = re.exec(msg.content)) != null) {
         console.log(result);
-        searchWiki(msg, result[1]);
+        if(result[1].length !== 0) {
+          searchWiki(msg, result[1]);
+        }
     }
 
   if (msg.content === "SOIYA") {
@@ -86,6 +88,9 @@ bot.on("message", msg => { //event handler for a message
     }
     else if(msg.content.startsWith(prefix + "skills")) {
       getSkills(msg);
+    }
+    else if(msg.content.startsWith(prefix + "!")) {
+      return;
     }
     else {
         msg.channel.sendMessage("Unrecognized Command. Use !help to see a list of commands!");
