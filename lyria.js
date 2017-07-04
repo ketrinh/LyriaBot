@@ -78,13 +78,13 @@ bot.on("message", msg => { //event handler for a message
       "!gwvictory => I'll tell everyone we won!\n";
       msg.channel.sendMessage(helpMessage);
     }
-    else if (msg.content.startsWith(prefix + "setwaifu")) {
+ /*   else if (msg.content.startsWith(prefix + "setwaifu")) {
       setWaifu(msg);
     }
 
     else if(msg.content.startsWith(prefix + "waifu")) {
       getWaifu(msg);
-    }
+    }*/
     else if(msg.content.startsWith(prefix + "skills")) {
       getSkills(msg);
     }
@@ -210,7 +210,7 @@ function setWaifu(message) {
         message.channel.sendMessage("You didn't enter a name!");
         return;
     }
-    let waifu = args.toLowerCase();
+    let waifu = args[1].toLowerCase();
     waifu = waifu[0].toUpperCase() + waifu.slice(1);
     let user = message.author.id;
 
