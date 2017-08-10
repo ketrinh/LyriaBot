@@ -89,15 +89,7 @@ bot.on("message", msg => { //event handler for a message
       "!gwfinals <number> <yes/no> <number> => First: number 1-5 for Finals Day #   Second: yes or no to fighting   Third: Minimum honors\n" +
       "!gwvictory => I'll tell everyone we won!\n";
       msg.channel.send(helpMessage);
-    }
-    else if (msg.content.startsWith(prefix + "setwaifu")) {
-      setWaifu(msg);
-    }
-
-    else if(msg.content.startsWith(prefix + "waifu")) {
-      getWaifu(msg);
-    }
-    else if(msg.content.startsWith(prefix + "skills")) {
+    }else if(msg.content.startsWith(prefix + "skills")) {
       getSkills(msg);
     }
     else if(msg.content.startsWith(prefix + "!")) {
