@@ -21,6 +21,10 @@ if(auth.bot_token) {
 }
 let skillsCache = {"one":"first"};
 let timerId = setInterval(()=>clearCache(), 21600000); // clear cache every 6 hours
+let askCache = ["It is certain","It is decidedly so","Without a doubt","Yes definitely","You may rely on it",
+"As I see it, yes","Most likely","Outlook good","Yes","Signs point to yes","I'm not sure if I heard you right","Ask again later",
+"Better not tell you now","Cannot predict now","Can you ask again please?","Don't count on it","Nope!","Katalina said no",
+"Outlook isn't so good","Very doubtful"];
 bot.on("message", msg => { //event handler for a message
   let prefix = "!"; //prefix for the bot
 
@@ -45,6 +49,14 @@ bot.on("message", msg => { //event handler for a message
   if(msg.content.charAt(0) == prefix) {
     if(msg.content.startsWith(prefix + "gwhonors")) {
       inputHonors(msg);
+    }
+
+    else if(msg.content.startsWith(prefix + "choose")) {
+      choose(msg);
+    }
+
+    else if(msg.content.startsWith(prefix + "ask")) {
+      ask(msg);
     }
 
     else if(msg.channel.type === 'dm' && msg.content.startsWith(prefix + "honors")) {
@@ -358,7 +370,40 @@ function clearCache() {
   console.log("cache cleared");
 }
 
+function choose(message) {
+  var args = message.content.slice(8).split(";");
+  var validChoices = [];
+  for (var i = 0; i < args.length; i++) {
+    if (args[i].length > 0) {
+      validChoices.push(args[i]);
+    }
+  }
+  if (validChoices.length <= 1) {
+    message.channel.sendMessage("I only see one option to choose from...");
+    return;
+  }
+  var answer = validChoices[Math.floor(Math.random() * validChoices.length)];
+  var embed = new Discord.RichEmbed()
+    .setAuthor("Lyria","http://i.imgur.com/pbGXrY5.png")
+    .setColor("#c7f1f5")
+    .setDescription(answer);
+  message.channel.send({embed});
+}
 
+function ask(message) {
+  var args = message.content.slice(5);
+  if (args.length > 256) {
+    message.channel.send("That question is too long");
+    return;
+  }
+  var embed = new Discord.RichEmbed()
+    .setAuthor("Lyria","http://i.imgur.com/pbGXrY5.png")
+    .setTitle(":question:**Question**")
+    .setColor("#c7f1f5")
+    .setDescription(args)
+    .addField(":pencil:**Answer**",askCache[Math.floor(Math.random() * askCache.length)]);
+  message.channel.send({embed});
+}
 
 
 bot.on('ready', () => {
