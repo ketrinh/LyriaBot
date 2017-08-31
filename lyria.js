@@ -79,11 +79,9 @@ bot.on("message", msg => { //event handler for a message
     else if (msg.content.startsWith(prefix + "gwfinals")) {
       msg.channel.send("Please make the command in the officers channel");
     }
-
-    else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwvictory")) {
-      bot.guilds.get(auth.server_id).defaultChannel.send("@NextGen\nWe won!\n");
-    }
-
+    // else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwvictory")) {
+    //   bot.guilds.get(auth.server_id).defaultChannel.send("@NextGen\nWe won!\n");
+    // }
     else if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
       helpMessageFormat(msg);
     }
