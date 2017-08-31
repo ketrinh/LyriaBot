@@ -43,10 +43,10 @@ else:
         row = trs[0]
         charName = ([cell.get_text(strip=True) for cell in row.find_all("td")])[0]
         outputString = ""
-        outputString += "**" + charName + "**(<" + url + ">):\n"
+        outputString += charName + "\n" + url + "\n"
         for key in skills:
                 value = skills[key]
-                outputString += "**" + key + "**\n"
+                outputString += key + "\n"
                 outputString += "*CD*: " + value[0] + "\n"
                 outputString += "*Duration*: " + value[1] + "\n"
                 outputString += value[2] + "\n"
