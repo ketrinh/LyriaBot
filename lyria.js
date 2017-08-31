@@ -337,8 +337,8 @@ function findPage(msg, search) {
 function parseSkills(msg, page, search) {
   var url = page;
   var pyshell = new PythonShell('scraper.py', {
-    mode: 'text'/*,
-    pythonPath: 'python3'*/
+    mode: 'text',
+    pythonPath: 'python3'
   });
   var output = '';
   pyshell.stdout.on('data', function (data) {
