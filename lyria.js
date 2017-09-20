@@ -2,12 +2,12 @@
 
 var Discord = require("discord.js"); //required dependencies
 var wikiSearch = require("nodemw");
-var googleAPI = require("googleapis");
 var bot = new Discord.Client();
 var fs = require("fs");
 var request = require('request');
 var cheerio = require('cheerio');
 var PythonShell = require('python-shell');
+var schedule = require('node-schedule')
 /* authorize various apis */
 
 try {
@@ -25,6 +25,18 @@ let askCache = ["It is certain","It is decidedly so","Without a doubt","Yes defi
 "As I see it, yes","Most likely","Outlook good","Yes","Signs point to yes","I'm not sure if I heard you right","Ask again later",
 "Better not tell you now","Cannot predict now","Can you ask again please?","Don't count on it","Nope!","Katalina said no",
 "Outlook isn't so good","Very doubtful"];
+
+var rule = new schedule.RecurrenceRule();
+rule.hour = 14;
+rule.minute = 34;
+
+
+var scheduleExecute = schedule.scheduleJob(rule, function() {
+  const ch = bot.guilds.get(server_id, 'LyriaBot Development');
+  if (!ch) return;
+  ch.defaultChannel.send("@here Never forgetti, Twitter resetti");
+})
+
 bot.on("message", msg => { //event handler for a message
   let prefix = "!"; //prefix for the bot
 
@@ -33,7 +45,7 @@ bot.on("message", msg => { //event handler for a message
   const channel = msg.channel;
     //begin main functionality
 
-  
+
   var content = msg.content;
   var result, re = /\[\[(.*?)\]\]/g;//regex
     while ((result = re.exec(msg.content)) != null) {
@@ -101,6 +113,10 @@ bot.on("message", msg => { //event handler for a message
     else if(msg.content.startsWith(prefix + "!" || prefix)) {
       return;
     }
+    else {
+        msg.channel.send("Unrecognized Command. Use !help to see a list of commands!");
+    }
+
   }
 });
 function searchWiki(msg, search) {
@@ -179,11 +195,10 @@ function prelimsNotif(message) {
     message.channel.send("Please enter a valid non negative number.");
     return;
   }
-  var prelimsMessage = "@NextGen\nGuild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
+  var prelimsMessage = "@everyone\nGuild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
   bot.guilds.get(auth.server_id).defaultChannel.send(prelimsMessage);
-
   //console.log(message.author);
-  //console.log((bot.guilds.get(serverID).defaultChannel.sendMessage("This is a nuke @everyone")));
+  //console.log((bot.guilds.get(serverID).defaultChannel.send("This is a nuke @everyone")));
   //console.log(bot.guilds.firstKey());
 
 }
@@ -207,61 +222,8 @@ function gwfinalsMessage(message) {
     return;
   }
 
-  var finalsMessage = "@NextGen\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
+  var finalsMessage = "@everyone\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
   bot.guilds.get(auth.server_id).defaultChannel.send(finalsMessage);
-
-}
-
-function setWaifu(message) {
-    let args = message.content.split(" ").slice(1);
-    if (args.length < 1) {
-        message.channel.send("You didn't enter a name!");
-        return;
-    }
-    let waifu = args[1].toLowerCase();
-    waifu = waifu[0].toUpperCase() + waifu.slice(1);
-    let user = message.author.id;
-
-
-    fs.readFile('./data/waifus.json', 'utf8', function(err, data){
-        if(err) {
-            console.log(err);
-        }
-        else {
-        var data = JSON.parse(data);
-
-        data[user] = waifu;
-        data = JSON.stringify(data);
-        fs.writeFile('./data/waifus.json', data, 'utf8', (err) => {
-            if (err) throw err;
-            message.channel.send("Your waifu was set as " + waifu + "!");
-        });
-
-    }});
-
-
-}
-
-function getWaifu(message) {
-    let mentions = message.mentions;
-    let user = mentions.users.firstKey();
-    let name = mentions.users.first().username;
-
-    fs.readFile('./data/waifus.json', 'utf8', function(err, data) {
-        if(err) {
-            console.log(err);
-        }
-        else {
-            var data = JSON.parse(data);
-            var result = data[user];
-            if(result == 0) {
-                message.channel.send(name + " hasn't set a waifu yet!");
-            };
-            message.channel.send(name + "'s waifu is " + result + "!");
-        }
-    });
-
-
 }
 
 
@@ -327,7 +289,7 @@ function findPage(msg, search) {
       client.api.call(paramsSearch, function(err2, info2, next2, data2) {
         console.log("Typo?");
         if(!data2[3].length){//404 error url is always at 4th index
-          msg.channel.send("Could not find page for " + search);
+          msg.channel.send("There is nothing in my journal about " + search);
         }
         else {
           parseSkills(msg, data2[3], search);
@@ -359,7 +321,7 @@ function parseSkills(msg, page, search) {
       console.log("parseSkills success");
       //console.log(outputTest.length);
     }
-    
+
   });
 }
 
