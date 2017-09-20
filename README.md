@@ -1,8 +1,9 @@
 #LyriaBot#
+
 A Discord bot to aid crews in the game Granblue Fantasy. Included Functionality
 includes a search for gbf.wiki, look up character skills, and Guild Wars commands.
 
-Dependencies: nodemw, discord.js.
+Dependencies: nodemw, discord.js, node-schedule.
 Requires you to run on your own computer.
 
 Available Commands:
@@ -15,3 +16,5 @@ Available Commands:
 !gwprelims - notifies everyone in the channel that the preliminaries for the Guild War event has started
 
 !gwfinals - notifies everyone in the channel that the finals for the Guild War event has started
+
+!skills [character] - lists the skills of the characters and their description

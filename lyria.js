@@ -7,6 +7,7 @@ var fs = require("fs");
 var request = require('request');
 var cheerio = require('cheerio');
 var PythonShell = require('python-shell');
+var schedule = require('node-schedule')
 /* authorize various apis */
 
 try {
@@ -24,6 +25,18 @@ let askCache = ["It is certain","It is decidedly so","Without a doubt","Yes defi
 "As I see it, yes","Most likely","Outlook good","Yes","Signs point to yes","I'm not sure if I heard you right","Ask again later",
 "Better not tell you now","Cannot predict now","Can you ask again please?","Don't count on it","Nope!","Katalina said no",
 "Outlook isn't so good","Very doubtful"];
+
+var rule = new schedule.RecurrenceRule();
+rule.hour = 14;
+rule.minute = 34;
+
+
+var scheduleExecute = schedule.scheduleJob(rule, function() {
+  const ch = bot.guilds.get(server_id, 'LyriaBot Development');
+  if (!ch) return;
+  ch.defaultChannel.send("@here Never forgetti, Twitter resetti");
+})
+
 bot.on("message", msg => { //event handler for a message
   let prefix = "!"; //prefix for the bot
 
