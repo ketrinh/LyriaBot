@@ -41,7 +41,6 @@ bot.on("message", msg => { //event handler for a message
           searchWiki(msg, result[1]);
         }
     }
-
   if (msg.content === "SOIYA") {
     msg.channel.send("SOIYA");
   }
@@ -79,20 +78,26 @@ bot.on("message", msg => { //event handler for a message
       msg.channel.send("Please make the command in the officers channel");
     }
 
+
     else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwvictory")) {
-      bot.guilds.get(auth.server_id).defaultChannel.send("@everyone\nWe won!\n");
+      bot.guilds.get(auth.server_id).defaultChannel.sendMessage("@everyone\nWe won!\n");
     }
 
-    else if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
-      var helpMessage = "I'll do my best to help!\nAvailable Commands:[[term]]  => I'll try to find a wiki page for your character\n" +
-      "!honors => I'll PM you instructions on how to submit honors\n!gwprelims <number> => I'll tell everyone the minimum contribution!\n" +
-      "!gwfinals <number> <yes/no> <number> => First: number 1-5 for Finals Day #   Second: yes or no to fighting   Third: Minimum honors\n" +
-      "!gwvictory => I'll tell everyone we won!\n";
-      msg.channel.send(helpMessage);
-    }else if(msg.content.startsWith(prefix + "skills")) {
-      getSkills(msg);
+
+   else if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
+      helpMessageFormat(msg);
     }
-    else if(msg.content.startsWith(prefix + "!")) {
+ /*   else if (msg.content.startsWith(prefix + "setwaifu")) {
+      setWaifu(msg);
+    }
+
+    else if(msg.content.startsWith(prefix + "waifu")) {
+      getWaifu(msg);
+    }*/
+    else if(msg.content.startsWith(prefix + "skills")) {
+      getSkills(msg);
+   }
+    else if(msg.content.startsWith(prefix + "!" || prefix)) {
       return;
     }
     else {
@@ -226,8 +231,9 @@ function getSkills(message) {
   else {
     search += args[0];
   }
-  if (skillsCache.hasOwnProperty(search)) {
-    message.channel.send(skillsCache[search]);
+  if (skillsCache.hasOwnProperty(search.toLowerCase())) {
+    var embed = skillsCache[search.toLowerCase()];
+    message.channel.send({embed});
   }
   else {
     findPage(message, search);
@@ -296,12 +302,34 @@ function parseSkills(msg, page, search) {
       console.log("Invalid skills page");
       msg.channel.send("I found no skills in <" + url + ">");
     } else{
-      msg.channel.send(output);
-      skillsCache[search] = output;
+      var embed = skillsFormatMessage(output);
+      skillsCache[search.toLowerCase()] = embed;
+      msg.channel.send({embed});
       console.log("parseSkills success");
+      //console.log(outputTest.length);
     }
 
   });
+}
+
+// Returns a Rich Embed for later use
+function skillsFormatMessage(output) {
+  var embed = new Discord.RichEmbed()
+    .setAuthor("Lyria","http://i.imgur.com/pbGXrY5.png")
+    .setColor("#c7f1f5");
+  var outputTest = output.split(/\r?\n/);
+  embed.setTitle(outputTest[0])
+    .setURL(outputTest[1])
+    .setThumbnail("https://i.imgur.com/ueSiofI.png");
+  var skillNum = (outputTest.length - 3)/4;
+  console.log("Skill Num: " + skillNum);
+  var i;
+  for (i = 0; i < skillNum; i++) {
+    var index = (i * 4) + 2;
+    var skillDesc = outputTest[index+1] + "\n" + outputTest[index+2] + "\n" + outputTest[index+3];
+    embed.addField(outputTest[index], skillDesc);
+    }
+  return embed;
 }
 
 function clearCache() {
@@ -342,6 +370,22 @@ function ask(message) {
     .setDescription(args)
     .addField(":pencil:**Answer**",askCache[Math.floor(Math.random() * askCache.length)]);
   message.channel.send({embed});
+}
+
+function helpMessageFormat(message) {
+  var embed= new Discord.RichEmbed()
+    .setAuthor("Lyria", "http://i.imgur.com/pbGXrY5.png")
+    .setTitle("Help Section")
+    .setColor("#c7f1f5")
+    .setDescription("Dong-A-Long-A-Long! It\'s Lyria, here to help you with anything! Here are my commands!")
+    .setThumbnail("https://i.imgur.com/F1ZxMRW.png")
+    .addField("[[search term(s)]]", "I\'ll try to find a wiki page for whatever you search")
+    .addField("!skills <character name>", "I\'ll look up the skills for that character")
+    .addField("!ask <question>", "Ask me any question!")
+    .addField("!choose <item 1>;<item 2>;...", "I\'ll randomly pick one!")
+    .addField("!gwprelims <number>", "[OFFICER CHANNEL ONLY]\n I\'ll tell everyone the minimum contribution!")
+    .addField("!gwfinals <number> <yes/no> <number>", "[OFFICER CHANNEL ONLY]\nFirst: number 1-5 for Finals Day #\nSecond: yes or no to fighting\nThird: number of minimum honors")
+  message.author.send({embed});
 }
 
 

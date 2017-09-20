@@ -1,6 +1,6 @@
 #LyriaBot#
 A Discord bot to aid crews in the game Granblue Fantasy. Included Functionality
-includes a search for gbf.wiki, and a way to collect honors for Guild Wars
+includes a search for gbf.wiki, look up character skills, and Guild Wars commands.
 
 Dependencies: nodemw, discord.js.
 Requires you to run on your own computer.
