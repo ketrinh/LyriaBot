@@ -27,12 +27,12 @@ let askCache = ["It is certain","It is decidedly so","Without a doubt","Yes defi
 "Outlook isn't so good","Very doubtful"];
 
 var rule = new schedule.RecurrenceRule();
-rule.hour = 14;
-rule.minute = 34;
+rule.hour = 16;
+rule.minute = 50;
 
 
 var scheduleExecute = schedule.scheduleJob(rule, function() {
-  const ch = bot.guilds.get(server_id, 'LyriaBot Development');
+  const ch = bot.guilds.get(server_id, 'EndGame GBF');
   if (!ch) return;
   ch.defaultChannel.send("@here Never forgetti, Twitter resetti");
 })
