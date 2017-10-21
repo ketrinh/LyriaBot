@@ -27,13 +27,16 @@ let askCache = ["It is certain","It is decidedly so","Without a doubt","Yes defi
 "Outlook isn't so good","Very doubtful"];
 
 var rule = new schedule.RecurrenceRule();
-rule.hour = 16;
-rule.minute = 50;
+rule.hour = 19;
+rule.minute = 55;
 
 
 var scheduleExecute = schedule.scheduleJob(rule, function() {
-  const ch = bot.guilds.get(server_id, 'EndGame GBF');
-  if (!ch) return;
+  const ch = bot.guilds.get(auth.server_id, 'Endgame GBF');
+  if (!ch){
+    console.log("channel not found"); 
+    return;
+  }
   ch.defaultChannel.send("@here Never forgetti, Twitter resetti");
 })
 
@@ -110,7 +113,7 @@ bot.on("message", msg => { //event handler for a message
     else if(msg.content.startsWith(prefix + "skills")) {
       getSkills(msg);
    }
-    else if(msg.content.startsWith(prefix + "!" || prefix)) {
+    else if(msg.content.startsWith(prefix + "!") || msg.content == prefix) {
       return;
     }
     else {
