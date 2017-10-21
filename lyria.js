@@ -1,3 +1,10 @@
+/*---------------------------------------
+      Lyria Bot
+    By: Kendrick Trinh and Hung Bao
+Description:
+
+
+-----------------------------------------*/
 "use strict";
 
 var Discord = require("discord.js"); //required dependencies
@@ -7,7 +14,8 @@ var fs = require("fs");
 var request = require('request');
 var cheerio = require('cheerio');
 var PythonShell = require('python-shell');
-var schedule = require('node-schedule')
+var schedule = require('node-schedule');
+const gacha = require('./gacha');
 /* authorize various apis */
 
 try {
@@ -19,8 +27,11 @@ if(auth.bot_token) {
   console.log("logging in with bot token");
   bot.login(auth.bot_token);
 }
+// Initialize skills cache and set timer to clear cache after X amount of hours
 let skillsCache = {"one":"first"};
 let timerId = setInterval(()=>clearCache(), 21600000); // clear cache every 6 hours
+
+// Predetermined answers for !ask function
 let askCache = ["It is certain","It is decidedly so","Without a doubt","Yes definitely","You may rely on it",
 "As I see it, yes","Most likely","Outlook good","Yes","Signs point to yes","I'm not sure if I heard you right","Ask again later",
 "Better not tell you now","Cannot predict now","Can you ask again please?","Don't count on it","Nope!","Katalina said no",
@@ -46,8 +57,8 @@ bot.on("message", msg => { //event handler for a message
   if(msg.author.bot) return; //exit if bot sends a message
 
   const channel = msg.channel;
-    //begin main functionality
-
+  
+  //begin main functionality
 
   var content = msg.content;
   var result, re = /\[\[(.*?)\]\]/g;//regex
@@ -71,6 +82,10 @@ bot.on("message", msg => { //event handler for a message
 
     else if(msg.content.startsWith(prefix + "ask")) {
       ask(msg);
+    }
+
+    else if(msg.content.startsWith(prefix + "draw")) {
+      draw(msg);
     }
 
     else if(msg.channel.type === 'dm' && msg.content.startsWith(prefix + "honors")) {
@@ -191,7 +206,9 @@ function parseHonors(message) {
 
 }
 
-// Preliminaries notification message; Simple @everyone in default channel
+/* Preliminaries notification message; Simple @everyone in default channel
+  Requires valid integer argument.
+*/
 function prelimsNotif(message) {
   var args = message.content.split(" ").slice(1);
   if (isNaN(args[0]) || args[0] < 0) {
@@ -206,6 +223,14 @@ function prelimsNotif(message) {
 
 }
 
+/*
+  GW finals message
+  Notifies the default channel a message notification with @everyone of GW Finals requirements
+  Requires 3 valid arguments when using the !gwfinals command
+  First: Number 1-5
+  Second: yes or no
+  Third: Any valid number
+*/
 function gwfinalsMessage(message) {
   let args = message.content.split(" ").slice(1);
   if (args.length != 3) {
@@ -230,6 +255,12 @@ function gwfinalsMessage(message) {
 }
 
 
+/*
+  Beginning of getSkills function
+  Splits message into args and checks if a valid character name
+  is in the cache.
+  Otherwise, call findPage function.
+*/
 function getSkills(message) {
   var args = message.content.split(" ").slice(1);
   if (args.length < 1) {
@@ -256,6 +287,11 @@ function getSkills(message) {
   }
 }
 
+/*
+  findPage takes in a search term and finds the appropriate character page on gbf.wiki
+  If there is a match, parseSkills is called.
+  Otherwise, tell user that there is no match.
+*/
 function findPage(msg, search) {
   var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
     protocol: 'https',
@@ -302,6 +338,13 @@ function findPage(msg, search) {
   });
 }
 
+/*
+  parseSkills is called when a valid gbf.wiki page is found.
+  Calls on PythonShell to run the webscraping script in scraper.py.
+  If there is an error, the page was not the correct one.
+  On success, calls skillsFormatMessage, passing in the webscraped data.
+  The Rich Embed is cached and the message is sent to the channel.
+*/
 function parseSkills(msg, page, search) {
   var url = page;
   var pyshell = new PythonShell('scraper.py', {
@@ -328,7 +371,7 @@ function parseSkills(msg, page, search) {
   });
 }
 
-// Returns a Rich Embed for later use
+// Returns a Rich Embed using the webscraped skills data
 function skillsFormatMessage(output) {
   var embed = new Discord.RichEmbed()
     .setAuthor("Lyria","http://i.imgur.com/pbGXrY5.png")
@@ -348,11 +391,16 @@ function skillsFormatMessage(output) {
   return embed;
 }
 
+// Clears the skills cache after X amount of hours.
 function clearCache() {
   skillsCache = {};
   console.log("cache cleared");
 }
 
+/*
+  choose function picks a random argument from a message split with ;
+  Last argument doesn't need a semicolon
+*/
 function choose(message) {
   var args = message.content.slice(8).split(";");
   var validChoices = [];
@@ -373,6 +421,7 @@ function choose(message) {
   message.channel.send({embed});
 }
 
+// ask function returns a random predetermined answer as a Rich Embed
 function ask(message) {
   var args = message.content.slice(5);
   if (args.length > 256) {
@@ -388,6 +437,10 @@ function ask(message) {
   message.channel.send({embed});
 }
 
+/*
+  Formats a help message in a Rich Embed and sends it to the author as a PM.
+  Help Message can be expanded with .addField method.
+*/
 function helpMessageFormat(message) {
   var embed= new Discord.RichEmbed()
     .setAuthor("Lyria", "http://i.imgur.com/pbGXrY5.png")
@@ -402,6 +455,35 @@ function helpMessageFormat(message) {
     .addField("!gwprelims <number>", "[OFFICER CHANNEL ONLY]\n I\'ll tell everyone the minimum contribution!")
     .addField("!gwfinals <number> <yes/no> <number>", "[OFFICER CHANNEL ONLY]\nFirst: number 1-5 for Finals Day #\nSecond: yes or no to fighting\nThird: number of minimum honors")
   message.author.send({embed});
+}
+
+/*  gachaPull function
+    Args: 1 or 10
+    Simulates a ten draw or single pull using gacha.js.
+*/
+function draw(message) {
+  var args = message.content.split(" ").slice(1);
+  if (args.length < 1) {
+    message.channel.send("Please enter 1 or 10 after the command.");
+    return;
+  }
+  var drawType = Number(args[0]);
+  if (isNaN(drawType)) {
+    message.channel.send("You need to enter a 1 or 10 for the type of gacha pulls.");
+    return;
+  }
+  if (drawType == 1 || drawType == 10) {
+    var drawResult = gacha.Gacha(drawType);
+    var embed = new Discord.RichEmbed()
+      .setAuthor("Lyria", "http://i.imgur.com/pbGXrY5.png")
+      .setTitle("Gacha Results")
+      .setColor("#c7f1f5")
+      .setThumbnail("https://i.imgur.com/IQwyQUC.png")
+      .setDescription(drawResult);
+
+    //console.log("Draw result for Type: " + drawType + " is\n" + drawResult);
+    message.channel.send({embed});
+  }
 }
 
 
