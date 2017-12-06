@@ -34,8 +34,11 @@ let timerId = setInterval(()=>clearCache(), 21600000); // clear cache every 6 ho
 // Predetermined answers for !ask function
 let askCache = ["It is certain","It is decidedly so","Without a doubt","Yes definitely","You may rely on it",
 "As I see it, yes","Most likely","Outlook good","Yes","Signs point to yes","I'm not sure if I heard you right","Ask again later",
-"Better not tell you now","Cannot predict now","Can you ask again please?","Don't count on it","Nope!","Katalina said no",
-"Outlook isn't so good","Very doubtful"];
+"Better not tell you now","Cannot predict now","I don't know","Don't count on it","Nope!","Katalina said no",
+"Outlook not good","Very doubtful"];
+
+let chatCommands = {"!choose":choose, "!ask":ask, "!draw":draw, "!gwprelims":prelimsNotif, "!gwfinals":gwfinalsMessage, "!help":helpMessageFormat,
+"!h":helpMessageFormat, "!skills":getSkills};
 
 var rule = new schedule.RecurrenceRule();
 rule.hour = 14;
@@ -69,69 +72,14 @@ bot.on("message", msg => { //event handler for a message
     msg.channel.send("SOIYA");
   }
   if(msg.content.charAt(0) == prefix) {
-    if(msg.content.startsWith(prefix + "gwhonors")) {
-      inputHonors(msg);
-    }
-
-    else if(msg.content.startsWith(prefix + "choose")) {
-      choose(msg);
-    }
-
-    else if(msg.content.startsWith(prefix + "ask")) {
-      ask(msg);
-    }
-
-    else if(msg.content.startsWith(prefix + "draw")) {
-      draw(msg);
-    }
-
-    else if(msg.channel.type === 'dm' && msg.content.startsWith(prefix + "honors")) {
-      parseHonors(msg);
-    }
-
-    else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwprelims")) {
-      console.log(msg.channel.name);
-      prelimsNotif(msg);
-    }
-
-    else if (msg.content.startsWith(prefix + "gwprelims")) {
-      msg.channel.send("Please make the command in the officers channel");
-    }
-
-    else if (msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwfinals")) {
-      gwfinalsMessage(msg);
-    }
-
-    else if (msg.content.startsWith(prefix + "gwfinals")) {
-      msg.channel.send("Please make the command in the officers channel");
-    }
-
-
-    else if(msg.channel.id == auth.officer_channel && msg.content.startsWith(prefix + "gwvictory")) {
-      bot.guilds.get(auth.server_id).defaultChannel.sendMessage("@everyone\nWe won!\n");
-    }
-
-
-   else if (msg.content.startsWith(prefix + "help") || msg.content.startsWith(prefix + "h")) {
-      helpMessageFormat(msg);
-    }
- /*   else if (msg.content.startsWith(prefix + "setwaifu")) {
-      setWaifu(msg);
-    }
-
-    else if(msg.content.startsWith(prefix + "waifu")) {
-      getWaifu(msg);
-    }*/
-    else if(msg.content.startsWith(prefix + "skills")) {
-      getSkills(msg);
-   }
-    else if(msg.content.startsWith(prefix + "!" || prefix)) {
-      return;
+    var lc = msg.content.toLowerCase();
+    var first_arg = (lc.split(" "))[0];
+    if (first_arg in chatCommands) {
+      chatCommands[first_arg](msg);
     }
     else {
-        msg.channel.send("Unrecognized Command. Use !help to see a list of commands!");
+      console.log("Invalid command");
     }
-
   }
 });
 function searchWiki(msg, search) {
@@ -207,6 +155,10 @@ function parseHonors(message) {
   Requires valid integer argument.
 */
 function prelimsNotif(message) {
+  if (message.channel.id != auth.officer_channel) {
+    message.channel.send("Please make the command in the officers channel");
+    return;
+  }
   var args = message.content.split(" ").slice(1);
   if (isNaN(args[0]) || args[0] < 0) {
     message.channel.send("Please enter a valid non negative number.");
@@ -229,7 +181,11 @@ function prelimsNotif(message) {
   Third: Any valid number
 */
 function gwfinalsMessage(message) {
-  let args = message.content.split(" ").slice(1);
+  if (message.channel.id != auth.officer_channel) {
+    message.channel.send("Please make the command in the officers channel");
+    return;
+  }
+  var args = message.content.split(" ").slice(1);
   if (args.length != 3) {
     message.channel.send("Make sure to fill all fields in the command.  Use '!help' for to learn more\n");
     return;
