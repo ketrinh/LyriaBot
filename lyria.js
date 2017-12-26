@@ -129,14 +129,14 @@ function searchWiki(msg, search) {
 }
 
 function inputHonors(message) {
-  let user = message.author;
+  var user = message.author;
   user.send("Please send a screenshot of your honors and in the" +
   "comment box add: !honors <honors>");
 }
 
 function parseHonors(message) {
-  let user = message.author;
-  let args = message.content.split(" ").slice(1);
+  var user = message.author;
+  var args = message.content.split(" ").slice(1);
 
   if (isNaN(args[0])) {    // User input check for integer
     user.send("Please enter a valid number.  For example, to enter 10" +
@@ -151,9 +151,10 @@ function parseHonors(message) {
 
 }
 
-/* Preliminaries notification message; Simple @everyone in default channel
-  Requires valid integer argument.
-*/
+/***************************
+ * Preliminaries notification message; Simple @everyone in default channel
+ * Requires valid integer argument.
+**************************/
 function prelimsNotif(message) {
   if (message.channel.id != auth.officer_channel) {
     message.channel.send("Please make the command in the officers channel");
@@ -172,14 +173,14 @@ function prelimsNotif(message) {
 
 }
 
-/*
+/*************************** 
   GW finals message
   Notifies the default channel a message notification with @everyone of GW Finals requirements
   Requires 3 valid arguments when using the !gwfinals command
   First: Number 1-5
   Second: yes or no
   Third: Any valid number
-*/
+**************************/
 function gwfinalsMessage(message) {
   if (message.channel.id != auth.officer_channel) {
     message.channel.send("Please make the command in the officers channel");
@@ -208,12 +209,12 @@ function gwfinalsMessage(message) {
 }
 
 
-/*
-  Beginning of getSkills function
-  Splits message into args and checks if a valid character name
-  is in the cache.
-  Otherwise, call findPage function.
-*/
+/**************************
+ * Beginning of getSkills function
+ * Splits message into args and checks if a valid character name
+ * is in the cache.
+ * Otherwise, call findPage function.
+**************************/
 function getSkills(message) {
   var args = message.content.split(" ").slice(1);
   if (args.length < 1) {
@@ -240,11 +241,11 @@ function getSkills(message) {
   }
 }
 
-/*
-  findPage takes in a search term and finds the appropriate character page on gbf.wiki
-  If there is a match, parseSkills is called.
-  Otherwise, tell user that there is no match.
-*/
+/**************************
+ * findPage takes in a search term and finds the appropriate character page on gbf.wiki
+ * If there is a match, parseSkills is called.
+ * Otherwise, tell user that there is no match.
+**************************/
 function findPage(msg, search) {
   var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
     protocol: 'https',
@@ -291,13 +292,13 @@ function findPage(msg, search) {
   });
 }
 
-/*
-  parseSkills is called when a valid gbf.wiki page is found.
-  Calls on PythonShell to run the webscraping script in scraper.py.
-  If there is an error, the page was not the correct one.
-  On success, calls skillsFormatMessage, passing in the webscraped data.
-  The Rich Embed is cached and the message is sent to the channel.
-*/
+/**************************
+ * parseSkills is called when a valid gbf.wiki page is found.
+ * Calls on PythonShell to run the webscraping script in scraper.py.
+ * If there is an error, the page was not the correct one.
+ * On success, calls skillsFormatMessage, passing in the webscraped data.
+ * The Rich Embed is cached and the message is sent to the channel.
+**************************/
 function parseSkills(msg, page, search) {
   var url = page;
   var pyshell = new PythonShell('scraper.py', {
@@ -350,10 +351,10 @@ function clearCache() {
   console.log("cache cleared");
 }
 
-/*
-  choose function picks a random argument from a message split with ;
-  Last argument doesn't need a semicolon
-*/
+/**************************
+ * choose function picks a random argument from a message split with ;
+ * Last argument doesn't need a semicolon
+**************************/
 function choose(message) {
   var args = message.content.slice(8).split(";");
   var validChoices = [];
@@ -390,10 +391,10 @@ function ask(message) {
   message.channel.send({embed});
 }
 
-/*
-  Formats a help message in a Rich Embed and sends it to the author as a PM.
-  Help Message can be expanded with .addField method.
-*/
+/**************************
+ * Formats a help message in a Rich Embed and sends it to the author as a PM.
+ * Help Message can be expanded with .addField method.
+**************************/
 function helpMessageFormat(message) {
   var embed= new Discord.RichEmbed()
     .setAuthor("Lyria", "http://i.imgur.com/pbGXrY5.png")
@@ -410,10 +411,11 @@ function helpMessageFormat(message) {
   message.author.send({embed});
 }
 
-/*  gachaPull function
-    Args: 1 or 10
-    Simulates a ten draw or single pull using gacha.js.
-*/
+/**************************
+ * gachaPull function
+ * Args: 1 or 10
+ * Simulates a ten draw or single pull using gacha.js.
+**************************/
 function draw(message) {
   var args = message.content.split(" ").slice(1);
   if (args.length < 1) {
