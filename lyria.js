@@ -407,6 +407,7 @@ function helpMessageFormat(message) {
     .addField("!skills <character name>", "I\'ll look up the skills for that character")
     .addField("!ask <question>", "Ask me any question!")
     .addField("!choose <item 1>;<item 2>;...", "I\'ll randomly pick one!")
+    .addField("!draw <1 or 10>", "Do a simulated 1/10 gacha pull")
     .addField("!gwprelims <number>", "[OFFICER CHANNEL ONLY]\n I\'ll tell everyone the minimum contribution!")
     .addField("!gwfinals <number> <yes/no> <number>", "[OFFICER CHANNEL ONLY]\nFirst: number 1-5 for Finals Day #\nSecond: yes or no to fighting\nThird: number of minimum honors")
   message.author.send({embed});
