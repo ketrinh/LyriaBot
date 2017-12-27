@@ -1,3 +1,4 @@
+"use strict";
 /*---------------------------------------
       Lyria Bot
     By: Kendrick Trinh and Hung Bao
@@ -5,7 +6,7 @@ Description:
 
 
 -----------------------------------------*/
-"use strict";
+
 
 var Discord = require("discord.js"); //required dependencies
 var wikiSearch = require("nodemw");
