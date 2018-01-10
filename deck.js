@@ -2,9 +2,10 @@
 
 class Deck {
     constructor() {
-        this.card_types = {"CLUBS":"C", "HEARTS":"H", "SPADES":"S", "DIAMONDS":"D", "JACK":"J", "QUEEN":"Q", "KING":"K", "ACE":"A", "JOKER":"X"};
-        this.suits_Set = ["C", "H", "S", "D"];
-        this.card_Set = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A", "X"];
+        this.card_types = {"CLUB":"C", "HEART":"H", "SPADE":"S", "DIAMOND":"D", "JACK":"J", "QUEEN":"Q", "KING":"K", "ACE":"A", "JOKER":"X"};
+        this.suits_Set = [this.card_types["CLUB"], this.card_types["HEART"], this.card_types["SPADE"], this.card_types["DIAMOND"]];
+        this.card_Set = ["2", "3", "4", "5", "6", "7", "8", "9", "10", this.card_types["JACK"], this.card_types["QUEEN"],
+                            this.card_types["KING"], this.card_types["ACE"], this.card_types["JOKER"]];
 
         this.current_deck = [];
         // console.log("New Deck Object created.");

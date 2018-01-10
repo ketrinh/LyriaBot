@@ -30,7 +30,9 @@ if(auth.bot_token) {
 }
 // Initialize skills cache and set timer to clear cache after X amount of hours
 let skillsCache = {"one":"first"};
+let supportSkillsCache = {"one":"first"};
 let timerId = setInterval(()=>clearCache(), 21600000); // clear cache every 6 hours
+let timerId2 = setInterval(()=>clearSupportCache(), 43200000); // clear cache every 12 hours
 
 // Predetermined answers for !ask function
 let askCache = ["It is certain","It is decidedly so","Without a doubt","Yes definitely","You may rely on it",
@@ -39,7 +41,7 @@ let askCache = ["It is certain","It is decidedly so","Without a doubt","Yes defi
 "Outlook not good","Very doubtful"];
 
 let chatCommands = {"!choose":choose, "!ask":ask, "!draw":draw, "!gwprelims":prelimsNotif, "!gwfinals":gwfinalsMessage, "!help":helpMessageFormat,
-"!h":helpMessageFormat, "!skills":getSkills};
+"!h":helpMessageFormat, "!skills":getSkills, "!skill":getSkills, "!supports":getSupportSkills, "!support":getSupportSkills, "!passive":getSupportSkills, "!passives":getSupportSkills};
 
 var rule = new schedule.RecurrenceRule();
 rule.hour = 14;
@@ -304,7 +306,7 @@ function parseSkills(msg, page, search) {
   var url = page;
   var pyshell = new PythonShell('scraper.py', {
     mode: 'text',
-    pythonPath: 'python3'
+    //pythonPath: 'python3'
   });
   var output = '';
   pyshell.stdout.on('data', function (data) {
@@ -350,6 +352,132 @@ function skillsFormatMessage(output) {
 function clearCache() {
   skillsCache = {};
   console.log("cache cleared");
+}
+
+function clearSupportCache() {
+  supportSkillsCache = {};
+  console.log("support cache cleared");
+}
+
+function getSupportSkills(message) {
+  var args = message.content.split(" ").slice(1);
+  if (args.length < 1) {
+    message.channel.send("Enter a character name");
+    return;
+  }
+  var search = "";
+  if (args.length > 1) {
+    var i;
+    for (i = 0; i < args.length-1; i++) {
+      search += args[i] + " ";
+    }
+    search += args[args.length-1];
+  }
+  else {
+    search += args[0];
+  }
+  if (supportSkillsCache.hasOwnProperty(search.toLowerCase())) {
+    var embed = supportSkillsCache[search.toLowerCase()];
+    message.channel.send({embed});
+  }
+  else {
+    findSupportPage(message, search);
+  }
+}
+
+function findSupportPage(msg, search) {
+  var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
+    protocol: 'https',
+    server: 'gbf.wiki',
+    path: '/',
+    debug: false
+  }),
+  paramsQuery = { //parameters for a direct api call
+    action: 'query', //action to take: query
+    prop: 'info',//property to get: info
+    inprop: 'url',//add extra info about url
+    generator: 'search',//enable searching
+    gsrsearch: search,//what to search
+    gsrlimit: 1,//take only first result
+    format: 'json', //output as .json
+    indexpageids: 1// get page ids
+  },
+  paramsSearch = {
+    action: 'opensearch',//action: opensearch for typos
+    search: search,// what to search
+    limit: 1,// only 1 result
+    format: 'json'//output as .json
+  }
+  client.api.call(paramsQuery, function(err, info, next, data) { //call api
+    console.log("querying: " + search);
+
+    try { //error returned when no such page matches exactly
+      let pageId = info["pageids"][0];
+      console.log(info["pages"][pageId].fullurl);
+      let url = info["pages"][pageId].fullurl;
+      parseSupportSkills(msg, url, search);
+    }
+    catch(TypeError) { //catch that error and use opensearch protocol
+      client.api.call(paramsSearch, function(err2, info2, next2, data2) {
+        console.log("Typo?");
+        if(!data2[3].length){//404 error url is always at 4th index
+          msg.channel.send("There is nothing in my journal about " + search);
+        }
+        else {
+          parseSupportSkills(msg, data2[3], search);
+        }
+      });
+    }
+  });
+}
+
+function parseSupportSkills(msg, page, search) {
+  var url = page;
+  var pyshell = new PythonShell('supportscraper.py', {
+    mode: 'text',
+    //pythonPath: 'python3'
+  });
+  var output = '';
+  pyshell.stdout.on('data', function (data) {
+    output += ''+data;
+  });
+  pyshell.send(url).end(function(err){
+    if (err) {
+      console.log(err);
+      console.log("Invalid skills page");
+      msg.channel.send("I found no support skills in <" + url + ">");
+    } else{
+      var embed = skillsSupportFormatMessage(output);
+      supportSkillsCache[search.toLowerCase()] = embed;
+      msg.channel.send({embed});
+      console.log("parseSupportSkills success");
+      //console.log(outputTest.length);
+    }
+
+  });
+}
+
+// Returns a Rich Embed using the webscraped skills data
+function skillsSupportFormatMessage(output) {
+  //console.log(output);
+  var embed = new Discord.RichEmbed()
+    .setAuthor("Lyria","http://i.imgur.com/pbGXrY5.png")
+    .setColor("#c7f1f5");
+  var outputTest = output.split(/\r?\n/);
+  //console.log("outputTest length is : " + outputTest.length);
+  //console.log(outputTest)
+  embed.setTitle(outputTest[0])
+    .setURL(outputTest[1])
+    .setThumbnail("https://i.imgur.com/ueSiofI.png");
+  var skillNum = (outputTest.length - 3)/3;
+  //console.log("Skill Num: " + skillNum);
+  var i;
+  for (i = 0; i < skillNum; i++) {
+    var index = (i * 3) + 2;
+    var skillDesc = outputTest[index+1] + "\n" + outputTest[index+2] + "\n";
+    embed.addField(outputTest[index], skillDesc);
+    }
+  return embed;
 }
 
 /**************************

@@ -17,7 +17,7 @@ headers.update(
 page = requests.get(url, headers=headers)
 soup = BeautifulSoup(page.content, "html.parser")
 
-table = soup.find(text="Skills ").find_parent("table")
+table = soup.findAll(text="Support Skills")[1].find_parent("table")
 try:
         table
 except NameError:
@@ -29,25 +29,23 @@ else:
 	        output.append([cell.get_text(strip=True) for cell in row.find_all("td")])
         possibleSkills = []
         for i in output:
-                if (len(i) == 6):
+                if (len(i) == 4):
                         possibleSkills.append(i)
         skills = {}
         names = []
         description = []
         key_value_pairs = []
         for item in possibleSkills:
-                if (len(item[5]) > 4 and (item[1] not in names)):
-                        description.append([item[2],item[3],item[5]])
+                if (len(item[3]) > 4 and (item[1] not in names)):
+                        description.append([item[2],item[3]])
                         names.append(item[1])
         skills = collections.OrderedDict(zip(names, description))
-        row = trs[0]
         charName = soup.find("h1", {"id":"firstHeading"}).get_text(strip=True)
         outputString = ""
         outputString += charName + "\n" + url + "\n"
         for key in skills:
                 value = skills[key]
                 outputString += key + "\n"
-                outputString += "*CD*: " + value[0] + "\n"
-                outputString += "*Duration*: " + value[1] + "\n"
-                outputString += value[2] + "\n"
+                outputString += "*Obtained*: " + value[0] + "\n"
+                outputString += value[1] + "\n"
         sys.stdout.write(outputString)
