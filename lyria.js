@@ -60,7 +60,7 @@ bot.on("message", msg => { //event handler for a message
   if(msg.author.bot) return; //exit if bot sends a message
 
   const channel = msg.channel;
-  
+
   //begin main functionality
 
   var content = msg.content;
@@ -85,7 +85,8 @@ bot.on("message", msg => { //event handler for a message
     }
   }
 });
-function searchWiki(msg, search) {
+
+function searchWiki(msg, search, command) {
   var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
     protocol: 'https',
     server: 'gbf.wiki',
@@ -115,22 +116,48 @@ function searchWiki(msg, search) {
       let pageId = info["pageids"][0];
       console.log(info["pages"][pageId].fullurl);
       let url = info["pages"][pageId].fullurl;
-      msg.channel.send("<" + url + ">");//output message to channel
+      if(command == "skill") {
+        console.log("user wants skills");
+        parseSkills(msg, data2[3], search);
+      }
+      else if(command == "support") {
+        console.log("user wants support skills");
+        parseSupportSkills(msg, data2[3], search);
+      }
+      else{
+        console.log("user wants page")
+        msg.channel.send(data2[3]);//output message
+      }
     }
     catch(TypeError) { //catch that error and use opensearch protocol
+      console.log("no exact match")
       client.api.call(paramsSearch, function(err2, info2, next2, data2) {
         console.log("Typo?");
         if(!data2[3].length){//404 error url is always at 4th index
-          msg.channel.send("Could not find page for " + search);
+          while(search.charAt(0) === '@') //sanitize input so bot doesn't spam
+          {
+            search = search.substr(1);
+            msg.channel.send("There is nothing in my journal about " + search);
+          }
         }
         else {
-          msg.channel.send("<" + data2[3] + ">");//output message
+          if(command == "skill") {
+            console.log("user wants skills");
+            parseSkills(msg, data2[3], search);
+          }
+          else if(command == "support") {
+            console.log("user wants support skills");
+            parseSupportSkills(msg, data2[3], search);
+          }
+          else{
+            console.log("user wants page")
+            msg.channel.send(data2[3]);//output message
+          }
         }
       });
     }
   });
 }
-
 function inputHonors(message) {
   var user = message.author;
   user.send("Please send a screenshot of your honors and in the" +
@@ -168,7 +195,7 @@ function prelimsNotif(message) {
     message.channel.send("Please enter a valid non negative number.");
     return;
   }
-  var prelimsMessage = "@everyone\nGuild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
+  var prelimsMessage = "Guild War Preliminaries have started!\nMinimum Contribution: " + args[0] + "m";
   bot.guilds.get(auth.server_id).defaultChannel.send(prelimsMessage);
   //console.log(message.author);
   //console.log((bot.guilds.get(serverID).defaultChannel.send("This is a nuke @everyone")));
@@ -176,7 +203,7 @@ function prelimsNotif(message) {
 
 }
 
-/*************************** 
+/***************************
   GW finals message
   Notifies the default channel a message notification with @everyone of GW Finals requirements
   Requires 3 valid arguments when using the !gwfinals command
@@ -207,7 +234,7 @@ function gwfinalsMessage(message) {
     return;
   }
 
-  var finalsMessage = "@everyone\nFinals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
+  var finalsMessage = "Finals Day " + args[0] + " has started!\nFighting: " + args[1] + "\nMinimum Contribution: " + args[2] + "m\nGood Luck!\n";
   bot.guilds.get(auth.server_id).defaultChannel.send(finalsMessage);
 }
 
@@ -240,59 +267,8 @@ function getSkills(message) {
     message.channel.send({embed});
   }
   else {
-    findPage(message, search);
+    searchWiki(message, search, "skill");
   }
-}
-
-/**************************
- * findPage takes in a search term and finds the appropriate character page on gbf.wiki
- * If there is a match, parseSkills is called.
- * Otherwise, tell user that there is no match.
-**************************/
-function findPage(msg, search) {
-  var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
-    protocol: 'https',
-    server: 'gbf.wiki',
-    path: '/',
-    debug: false
-  }),
-  paramsQuery = { //parameters for a direct api call
-    action: 'query', //action to take: query
-    prop: 'info',//property to get: info
-    inprop: 'url',//add extra info about url
-    generator: 'search',//enable searching
-    gsrsearch: search,//what to search
-    gsrlimit: 1,//take only first result
-    format: 'json', //output as .json
-    indexpageids: 1// get page ids
-  },
-  paramsSearch = {
-    action: 'opensearch',//action: opensearch for typos
-    search: search,// what to search
-    limit: 1,// only 1 result
-    format: 'json'//output as .json
-  }
-  client.api.call(paramsQuery, function(err, info, next, data) { //call api
-    console.log("querying: " + search);
-
-    try { //error returned when no such page matches exactly
-      let pageId = info["pageids"][0];
-      console.log(info["pages"][pageId].fullurl);
-      let url = info["pages"][pageId].fullurl;
-      parseSkills(msg, url, search);
-    }
-    catch(TypeError) { //catch that error and use opensearch protocol
-      client.api.call(paramsSearch, function(err2, info2, next2, data2) {
-        console.log("Typo?");
-        if(!data2[3].length){//404 error url is always at 4th index
-          msg.channel.send("There is nothing in my journal about " + search);
-        }
-        else {
-          parseSkills(msg, data2[3], search);
-        }
-      });
-    }
-  });
 }
 
 /**************************
@@ -381,54 +357,8 @@ function getSupportSkills(message) {
     message.channel.send({embed});
   }
   else {
-    findSupportPage(message, search);
+    searchWiki(message, search, "support");
   }
-}
-
-function findSupportPage(msg, search) {
-  var client = new wikiSearch({ //create a new nodemw bot for gbf.wiki
-    protocol: 'https',
-    server: 'gbf.wiki',
-    path: '/',
-    debug: false
-  }),
-  paramsQuery = { //parameters for a direct api call
-    action: 'query', //action to take: query
-    prop: 'info',//property to get: info
-    inprop: 'url',//add extra info about url
-    generator: 'search',//enable searching
-    gsrsearch: search,//what to search
-    gsrlimit: 1,//take only first result
-    format: 'json', //output as .json
-    indexpageids: 1// get page ids
-  },
-  paramsSearch = {
-    action: 'opensearch',//action: opensearch for typos
-    search: search,// what to search
-    limit: 1,// only 1 result
-    format: 'json'//output as .json
-  }
-  client.api.call(paramsQuery, function(err, info, next, data) { //call api
-    console.log("querying: " + search);
-
-    try { //error returned when no such page matches exactly
-      let pageId = info["pageids"][0];
-      console.log(info["pages"][pageId].fullurl);
-      let url = info["pages"][pageId].fullurl;
-      parseSupportSkills(msg, url, search);
-    }
-    catch(TypeError) { //catch that error and use opensearch protocol
-      client.api.call(paramsSearch, function(err2, info2, next2, data2) {
-        console.log("Typo?");
-        if(!data2[3].length){//404 error url is always at 4th index
-          msg.channel.send("There is nothing in my journal about " + search);
-        }
-        else {
-          parseSupportSkills(msg, data2[3], search);
-        }
-      });
-    }
-  });
 }
 
 function parseSupportSkills(msg, page, search) {
