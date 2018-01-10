@@ -306,7 +306,7 @@ function parseSkills(msg, page, search) {
   var url = page;
   var pyshell = new PythonShell('scraper.py', {
     mode: 'text',
-    //pythonPath: 'python3'
+    pythonPath: 'python3'
   });
   var output = '';
   pyshell.stdout.on('data', function (data) {
@@ -435,7 +435,7 @@ function parseSupportSkills(msg, page, search) {
   var url = page;
   var pyshell = new PythonShell('supportscraper.py', {
     mode: 'text',
-    //pythonPath: 'python3'
+    pythonPath: 'python3'
   });
   var output = '';
   pyshell.stdout.on('data', function (data) {
