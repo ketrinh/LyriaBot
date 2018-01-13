@@ -31,8 +31,8 @@ if(auth.bot_token) {
 // Initialize skills cache and set timer to clear cache after X amount of hours
 let skillsCache = {"one":"first"};
 let supportSkillsCache = {"one":"first"};
-let timerId = setInterval(()=>clearCache(), 21600000); // clear cache every 6 hours
-let timerId2 = setInterval(()=>clearSupportCache(), 43200000); // clear cache every 12 hours
+let timerId = setInterval(()=>clearCache(), 172800000); // clear cache every 6 hours
+let timerId2 = setInterval(()=>clearSupportCache(), 172800000); // clear cache every 12 hours
 
 // Predetermined answers for !ask function
 let askCache = ["It is certain","It is decidedly so","Without a doubt","Yes definitely","You may rely on it",
@@ -44,13 +44,16 @@ let chatCommands = {"!choose":choose, "!ask":ask, "!draw":draw, "!gwprelims":pre
 "!h":helpMessageFormat, "!skills":getSkills, "!skill":getSkills, "!supports":getSupportSkills, "!support":getSupportSkills, "!passive":getSupportSkills, "!passives":getSupportSkills};
 
 var rule = new schedule.RecurrenceRule();
-rule.hour = 13;
-rule.minute = 1;
+rule.hour = 19;
+rule.minute = 55;
 
 
 var scheduleExecute = schedule.scheduleJob(rule, function() {
-  const ch = bot.guilds.get(auth.server_id, 'LyriaBot Development');
-  if (!ch) return;
+  const ch = bot.guilds.get(auth.server_id, 'Endgame GBF');
+  if (!ch){
+    console.log("channel not found"); 
+    return;
+  }
   ch.defaultChannel.send("@here Never forgetti, Twitter resetti");
 })
 
@@ -131,7 +134,7 @@ function searchWiki(msg, search, command) {
       }
       else{
         console.log("user wants page")
-        msg.channel.send(data2[3]);//output message
+        msg.channel.send("<" + data2[3] + ">");//output message
       }
     }
     catch(TypeError) { //catch that error and use opensearch protocol
@@ -139,10 +142,18 @@ function searchWiki(msg, search, command) {
       client.api.call(paramsSearch, function(err2, info2, next2, data2) {
         console.log("Typo?");
         if(!data2[3].length){//404 error url is always at 4th index
+<<<<<<< HEAD
 
             msg.channel.send("There is nothing in my journal about " + search);
             
         }
+=======
+          sanitized = search.split(@,1);
+          
+          msg.channel.send("There is nothing in my journal about " + sanitized[1]);
+          }
+
+>>>>>>> refs/remotes/origin/master
         else {
           if(command == "skill") {
             console.log("user wants skills");
@@ -154,7 +165,11 @@ function searchWiki(msg, search, command) {
           }
           else{
             console.log("user wants page")
+<<<<<<< HEAD
             msg.channel.send("<" + data2[3]+ ">");//output message
+=======
+            msg.channel.send("<" + data2[3] + ">");//output message
+>>>>>>> refs/remotes/origin/master
           }
         }
       });
