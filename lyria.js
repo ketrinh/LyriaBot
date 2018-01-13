@@ -51,7 +51,7 @@ rule.minute = 55;
 var scheduleExecute = schedule.scheduleJob(rule, function() {
   const ch = bot.guilds.get(auth.server_id, 'Endgame GBF');
   if (!ch){
-    console.log("channel not found"); 
+    console.log("channel not found");
     return;
   }
   ch.defaultChannel.send("@here Never forgetti, Twitter resetti");
@@ -66,23 +66,19 @@ bot.on("message", msg => { //event handler for a message
 
   //begin main functionality
 
-  var content = msg.content;
+  var content = msg.cleanContent;
   var result, re = /\[\[(.*?)\]\]/g;//regex
-    while ((result = re.exec(msg.content)) != null) {
+    while ((result = re.exec(content)) != null) {
         console.log(result);
-        if(msg.mentions.members.size > 0) {
-          console.log("Mention found");
-          msg.channel.send("Please do not use any mentions.");
-        }
-        else if(result[1].length !== 0) {
+        if(result[1].length !== 0) {
           searchWiki(msg, result[1]);
         }
     }
-  if (msg.content === "SOIYA") {
+  if (content === "SOIYA") {
     msg.channel.send("SOIYA");
   }
-  if(msg.content.charAt(0) == prefix) {
-    var lc = msg.content.toLowerCase();
+  if(content.charAt(0) == prefix) {
+    var lc = content.toLowerCase();
     var first_arg = (lc.split(" "))[0];
 
     if (first_arg in chatCommands) {
@@ -142,18 +138,8 @@ function searchWiki(msg, search, command) {
       client.api.call(paramsSearch, function(err2, info2, next2, data2) {
         console.log("Typo?");
         if(!data2[3].length){//404 error url is always at 4th index
-<<<<<<< HEAD
-
-            msg.channel.send("There is nothing in my journal about " + search);
-            
+          msg.channel.send("There is nothing in my journal about " + search);
         }
-=======
-          sanitized = search.split(@,1);
-          
-          msg.channel.send("There is nothing in my journal about " + sanitized[1]);
-          }
-
->>>>>>> refs/remotes/origin/master
         else {
           if(command == "skill") {
             console.log("user wants skills");
@@ -165,11 +151,7 @@ function searchWiki(msg, search, command) {
           }
           else{
             console.log("user wants page")
-<<<<<<< HEAD
             msg.channel.send("<" + data2[3]+ ">");//output message
-=======
-            msg.channel.send("<" + data2[3] + ">");//output message
->>>>>>> refs/remotes/origin/master
           }
         }
       });
