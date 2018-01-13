@@ -67,7 +67,11 @@ bot.on("message", msg => { //event handler for a message
   var result, re = /\[\[(.*?)\]\]/g;//regex
     while ((result = re.exec(msg.content)) != null) {
         console.log(result);
-        if(result[1].length !== 0) {
+        if(msg.mentions.members.size > 0) {
+          console.log("Mention found");
+          msg.channel.send("Please do not use any mentions.");
+        }
+        else if(result[1].length !== 0) {
           searchWiki(msg, result[1]);
         }
     }
@@ -77,6 +81,7 @@ bot.on("message", msg => { //event handler for a message
   if(msg.content.charAt(0) == prefix) {
     var lc = msg.content.toLowerCase();
     var first_arg = (lc.split(" "))[0];
+
     if (first_arg in chatCommands) {
       chatCommands[first_arg](msg);
     }
@@ -134,11 +139,9 @@ function searchWiki(msg, search, command) {
       client.api.call(paramsSearch, function(err2, info2, next2, data2) {
         console.log("Typo?");
         if(!data2[3].length){//404 error url is always at 4th index
-          while(search.charAt(0) === '@') //sanitize input so bot doesn't spam
-          {
-            search = search.substr(1);
+
             msg.channel.send("There is nothing in my journal about " + search);
-          }
+            
         }
         else {
           if(command == "skill") {
@@ -151,7 +154,7 @@ function searchWiki(msg, search, command) {
           }
           else{
             console.log("user wants page")
-            msg.channel.send(data2[3]);//output message
+            msg.channel.send("<" + data2[3]+ ">");//output message
           }
         }
       });
