@@ -29,6 +29,7 @@ if(auth.bot_token) {
   bot.login(auth.bot_token);
 }
 // Initialize skills cache and set timer to clear cache after X amount of hours
+let skillsCharLimit = 200;
 let skillsCache = {"one":"first"};
 let supportSkillsCache = {"one":"first"};
 let timerId = setInterval(()=>clearCache(), 21600000); // clear cache every 6 hours
@@ -343,8 +344,12 @@ function skillsFormatMessage(output) {
   for (i = 0; i < skillNum; i++) {
     var index = (i * 4) + 2;
     var skillDesc = outputTest[index+1] + "\n" + outputTest[index+2] + "\n" + outputTest[index+3];
-    embed.addField(outputTest[index], skillDesc);
+    if (skillDesc.length > skillsCharLimit) {
+      embed.addField(outputTest[index], "Skill Description exceeds character limit. Click on gbf.wiki page link to view it.");
+    } else {
+      embed.addField(outputTest[index], skillDesc);
     }
+  }
   return embed;
 }
 
@@ -475,8 +480,12 @@ function skillsSupportFormatMessage(output) {
   for (i = 0; i < skillNum; i++) {
     var index = (i * 3) + 2;
     var skillDesc = outputTest[index+1] + "\n" + outputTest[index+2] + "\n";
-    embed.addField(outputTest[index], skillDesc);
+    if (skillDesc.length > skillsCharLimit) {
+      embed.addField(outputTest[index], "Skill Description exceeds character limit. Click on gbf.wiki page link to view it.");
+    } else {
+      embed.addField(outputTest[index], skillDesc);
     }
+  }
   return embed;
 }
 
