@@ -29,6 +29,8 @@ if(auth.bot_token) {
   bot.login(auth.bot_token);
 }
 // Initialize skills cache and set timer to clear cache after X amount of hours
+let skillsCharLimit = 200;
+let embedFieldCharLimit = 1000;
 let skillsCache = {"one":"first"};
 let supportSkillsCache = {"one":"first"};
 let timerId = setInterval(()=>clearCache(), 172800000); // clear cache every 6 hours
@@ -319,8 +321,12 @@ function skillsFormatMessage(output) {
   for (i = 0; i < skillNum; i++) {
     var index = (i * 4) + 2;
     var skillDesc = outputTest[index+1] + "\n" + outputTest[index+2] + "\n" + outputTest[index+3];
-    embed.addField(outputTest[index], skillDesc);
+    if (skillDesc.length > skillsCharLimit) {
+      embed.addField(outputTest[index], "Skill Description exceeds character limit. Click on gbf.wiki page link to view it.");
+    } else {
+      embed.addField(outputTest[index], skillDesc);
     }
+  }
   return embed;
 }
 
@@ -405,8 +411,12 @@ function skillsSupportFormatMessage(output) {
   for (i = 0; i < skillNum; i++) {
     var index = (i * 3) + 2;
     var skillDesc = outputTest[index+1] + "\n" + outputTest[index+2] + "\n";
-    embed.addField(outputTest[index], skillDesc);
+    if (skillDesc.length > skillsCharLimit) {
+      embed.addField(outputTest[index], "Skill Description exceeds character limit. Click on gbf.wiki page link to view it.");
+    } else {
+      embed.addField(outputTest[index], skillDesc);
     }
+  }
   return embed;
 }
 
@@ -463,6 +473,7 @@ function helpMessageFormat(message) {
     .setThumbnail("https://i.imgur.com/F1ZxMRW.png")
     .addField("[[search term(s)]]", "I\'ll try to find a wiki page for whatever you search")
     .addField("!skills <character name>", "I\'ll look up the skills for that character")
+    .addField("!supports <character name>", "I\'ll look up the supports for that character")
     .addField("!ask <question>", "Ask me any question!")
     .addField("!choose <item 1>;<item 2>;...", "I\'ll randomly pick one!")
     .addField("!draw <1 or 10>", "Do a simulated 1/10 gacha pull")
